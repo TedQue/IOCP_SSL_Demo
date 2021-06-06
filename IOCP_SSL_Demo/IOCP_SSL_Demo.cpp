@@ -74,6 +74,8 @@ int main(int argc, const char *argv[])
 	IoSocket* adp = sel->socket(url.scheme() == Url::sch_https ? IO_TYPE_SOCKET_SSL : IO_TYPE_SOCKET);
 	adp->bind(NULL, 0);
 	adp->connect(ip, url.port());
+
+	// 连接完成时将触发可写事件
 	sel->ctl(adp, IO_EVENT_SEND);
 
 	IoSocket* actAdp = NULL;
@@ -91,8 +93,8 @@ int main(int argc, const char *argv[])
 		// 分类处理活跃的网络事件
 		if (TEST_BIT(ev, IO_EVENT_SEND))
 		{
-			// 第一次触发可写事件,连接成功,发送 https 请求
-			std::cout << "connected, sending request ..." << std::endl;
+			// 第一次触发可写事件,连接成功,发送 http 请求
+			std::cout << "connected, sending http request ..." << std::endl;
 			adp_puts(actAdp, "GET ");
 			adp_puts(actAdp, url.locate());
 			adp_puts(actAdp, " HTTP/1.1\r\n");
