@@ -13,7 +13,7 @@ typedef struct
 class IoSelectorImpl : public IoSelector
 {
 protected:
-	HANDLE _iocpHandle; /* IOCP:A 后台工作端口 */
+	HANDLE _iocpHandle;
 	SSL_CTX* _sslCtx;
 	std::list<IoSocketImpl*> _adpList;
 	std::list<IoSocketImpl*> _actAdpList;

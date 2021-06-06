@@ -148,12 +148,17 @@
     <ClCompile Include="IoSelectorImpl.cpp" />
     <ClCompile Include="IoSocketImpl.cpp" />
     <ClCompile Include="IoSocketSSLImpl.cpp" />
+    <ClCompile Include="Url.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IoSelector.h" />
     <ClInclude Include="IoSelectorImpl.h" />
     <ClInclude Include="IoSocketImpl.h" />
     <ClInclude Include="IoSocketSSLImpl.h" />
+    <ClInclude Include="Url.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,23 +3,7 @@
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
-/*
-* IOCP 模型最大的好处是多线程并发能力,但是采用 IoSelector 的方式,IO操作完成后操作同一个"活跃"队列,必定导致
-* 多个线程竞争的状况,最终还是单线程的性能,IOCP的好处并没有体现,当然,IoSelector的模型对于程序结构设计到好处
-* 是很大的.
-* 如何改进?
-* 1. 每个工作线程维护自己的活跃队列?
-* 2. 统一使用一个无锁的队列?
-*
-*
-*
-*
-*
-*
-*
-*/
 
-/* */
 #define MIN_SOCKADDR_BUF_SIZE (sizeof(sockaddr_in) + 16)
 
 /*

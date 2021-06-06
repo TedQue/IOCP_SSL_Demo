@@ -67,8 +67,8 @@ protected:
 	int _mode;
 	int _shutdownFlag;
 
-	int _lastError;		/* 最近的错误码 */
-	int _status;		/* 套接字状态*/
+	int _lastError;
+	int _status;
 
 	void* _userPtr;
 	void* _userPtr2;
@@ -81,9 +81,6 @@ protected:
 	iocp_overlapped_t _sendOlp;
 	iocp_overlapped_t _recvOlp;
 
-	/*
-	* 工具函数
-	*/
 	bool busy();
 	int setLastError(int err);
 	int setStatus(int st);

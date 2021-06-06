@@ -1,39 +1,101 @@
 ﻿// IOCP_SSL_Demo.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
-
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
+#include "Url.h"
 #include "IoSelector.h"
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+#include <openssl/crypto.h>
 
 int adp_puts(IoSocket* adp, const char* str)
 {
 	return adp->send(str, strlen(str));
 }
 
+int resolve(const char* host, char* addr)
+{
+    struct addrinfo hints, * res = NULL, * ptr = NULL;
+    memset(&hints, 0, sizeof(addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = AI_CANONNAME;
+
+    DWORD dwRetval = getaddrinfo(host, NULL, &hints, &res);
+    if (dwRetval)
+    {
+        std::cout << "getaddrinfo failed with error: " << dwRetval << std::endl;
+        return 0;
+    }
+    else
+    {
+		// 简单返回第一个 ipv4 地址
+		for (ptr = res; ptr != NULL; ptr = ptr->ai_next)
+		{
+			in_addr inAddr = ((sockaddr_in*)(res->ai_addr))->sin_addr;
+			unsigned long ip = inAddr.S_un.S_addr;
+			snprintf(addr, 64, "%d.%d.%d.%d", ip & 0x000000FF, (ip >> 8) & 0x000000FF, (ip >> 16) & 0x000000FF, (ip >> 24));
+			break;
+		}
+		freeaddrinfo(res);
+		return 1;
+    }
+}
+
 int main(int argc, const char *argv[])
 {
-	const char* url = "https://www.baidu.com/";
-	if (argc >= 2)
-	{
-		url = argv[1];
-	}
-	// std::cout << "url: " << url << std::endl;
-	IoSelector_Init();
-	IoSelector* sel = CreateIoSelector();
+	std::cout << "Welcome to the world of IOCP and OpenSSL" << std::endl;
+	std::cout << "demo v0.1 by Que's C++ Studio\r\n" << std::endl;
 
-	IoSocket* adp = sel->socket(IO_TYPE_SOCKET_SSL);
+	if (argc < 2)
+	{
+		std::cout << "require parameter: url" << std::endl;
+		return 1;
+	}
+
+	// 初始化 winsock, openssl 库
+	IoSelector_Init();
+	std::cout << "OpenSSL version: " << OpenSSL_version(OPENSSL_FULL_VERSION_STRING) << "\r\n" << std::endl;
+
+	// 域名解析
+	Url url(argv[1]);
+    char ip[64] = {};
+	if (!resolve(url.host(), ip))
+	{
+		std::cout << "failed to resolve: " << url.url() << std::endl;
+		return 2;
+	}
+	std::cout << "resolve " << url.url() << " -> " << ip << ":" << url.port() << std::endl;
+
+	// 读取网页内容
+	IoSelector* sel = CreateIoSelector();
+	IoSocket* adp = sel->socket(url.scheme() == Url::sch_https ? IO_TYPE_SOCKET_SSL : IO_TYPE_SOCKET);
 	adp->bind(NULL, 0);
-	adp->connect("14.215.177.38", 443);
+	adp->connect(ip, url.port());
 	sel->ctl(adp, IO_EVENT_SEND);
 
 	IoSocket* actAdp = NULL;
 	unsigned int ev = IO_EVENT_NONE;
-	for (; sel->wait(&actAdp, &ev) == IO_WAIT_SUCESS;)
+	for (;;)
 	{
+		// 等待网络事件,模仿 epoll_wait
+		int waitResult = sel->wait(&actAdp, &ev);
+		if (IO_WAIT_SUCESS != waitResult)
+		{
+			std::cout << "wait failed with error: " << waitResult << std::endl;
+			break;
+		}
+
+		// 分类处理活跃的网络事件
 		if (TEST_BIT(ev, IO_EVENT_SEND))
 		{
-			// 第一次触发可写事件,连接成功,发送 http 请求
+			// 第一次触发可写事件,连接成功,发送 https 请求
 			std::cout << "connected, sending request ..." << std::endl;
-			adp_puts(actAdp, "GET / HTTP/1.1\r\n");
+			adp_puts(actAdp, "GET ");
+			adp_puts(actAdp, url.locate());
+			adp_puts(actAdp, " HTTP/1.1\r\n");
 			adp_puts(actAdp, "Accept: */*\r\n");
 			adp_puts(actAdp, "Pragma: no-cache\r\n");
 			adp_puts(actAdp, "Cache-Control: no-cache\r\n");
@@ -53,7 +115,8 @@ int main(int argc, const char *argv[])
 		}
 		else
 		{
-			std::cout << "wait error: " << ev << std::endl;
+			std::cout << "sock error: " << ev << std::endl;
+			sel->close(actAdp);
 			break;
 		}
 	}
@@ -62,14 +125,3 @@ int main(int argc, const char *argv[])
 	IoSelector_Cleanup();
 	return 0;
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件

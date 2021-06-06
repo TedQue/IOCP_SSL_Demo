@@ -30,6 +30,9 @@
     <ClCompile Include="IoSocketSSLImpl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Url.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IoSelector.h">
@@ -44,5 +47,11 @@
     <ClInclude Include="IoSocketSSLImpl.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Url.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\ReadMe.txt" />
   </ItemGroup>
 </Project>

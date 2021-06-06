@@ -2,8 +2,7 @@
 
 /* Copyright (C) 2015 阙荣文
  *
- * 这是一个开源免费软件,您可以自由的修改和发布.
- * 禁止用作商业用途.
+ * GPLv3
  *
  * 联系原作者: querw@sina.com 
 */
@@ -11,10 +10,6 @@
 /*
 * Socket IO 封装,对 Windows 平台的 IOCP 模型和 Linux/Unix 平台的 epoll 提供一个统一的接口.
 * 主要是把 IOCP 模型的回调方式改为应用主动获取方式向 epoll 的编程风格靠拢.
-*
-* 网上有篇文章http://www.cnblogs.com/irons/p/4179560.html 提到一个思路: 
-* 在windows下使用0字节的WSARecv/WSASend(读写)作为读写检测，将IOCP作为一个通知模型，而"抛弃"它的异步模型
-* 用这种方法就不用再分配缓冲区了,直接用 socket 的内部缓冲区.
 *
 */
 

@@ -2,6 +2,9 @@
 #include "IoSocketSSLImpl.h"
 
 // 调试工具函数
+#ifdef NDEBUG
+#define sgtrace(...)
+#else
 void sgtrace(const char* fmt, ...)
 {
 	char dest[1024] = {};
@@ -12,6 +15,7 @@ void sgtrace(const char* fmt, ...)
 
 	OutputDebugStringA(dest);
 }
+#endif
 
 static int bio_iocp_write(BIO *h, const char *buf, int num);
 static int bio_iocp_read(BIO *h, char *buf, int size);
