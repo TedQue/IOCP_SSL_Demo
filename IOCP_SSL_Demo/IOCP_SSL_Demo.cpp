@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <openssl/crypto.h>
 
+#pragma warning(disable : 4996)
+
 int adp_puts(IoSocket* adp, const char* str)
 {
 	return adp->send(str, strlen(str));
@@ -51,7 +53,7 @@ int main(int argc, const char *argv[])
 
 	if (argc < 2)
 	{
-		std::cout << "require parameter: url" << std::endl;
+		std::cout << "usage: IOCP_SSL_Demo <url> <save file>" << std::endl;
 		return 1;
 	}
 
@@ -68,6 +70,10 @@ int main(int argc, const char *argv[])
 		return 2;
 	}
 	std::cout << "resolve " << url.url() << " -> " << ip << ":" << url.port() << std::endl;
+
+	// 网页写文件
+	FILE* d = NULL;
+	if (argc >= 3) d = fopen(argv[2], "w");
 
 	// 读取网页内容
 	IoSelector* sel = CreateIoSelector();
@@ -120,6 +126,7 @@ int main(int argc, const char *argv[])
 			{
 				buf[r] = 0;
 				std::cout << buf << std::flush;
+				if(d) fwrite(buf, 1, r, d);
 			}
 		}
 		else
@@ -129,6 +136,8 @@ int main(int argc, const char *argv[])
 			break;
 		}
 	}
+
+	if(d) fclose(d);
 
 	FreeIoSelector(sel);
 	IoSelector_Cleanup();
