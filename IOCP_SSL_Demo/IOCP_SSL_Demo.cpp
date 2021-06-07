@@ -98,6 +98,9 @@ int main(int argc, const char *argv[])
 			adp_puts(actAdp, "GET ");
 			adp_puts(actAdp, url.locate());
 			adp_puts(actAdp, " HTTP/1.1\r\n");
+			adp_puts(actAdp, "Host: ");
+			adp_puts(actAdp, url.host());
+			adp_puts(actAdp, "\r\n");
 			adp_puts(actAdp, "Accept: */*\r\n");
 			adp_puts(actAdp, "Pragma: no-cache\r\n");
 			adp_puts(actAdp, "Cache-Control: no-cache\r\n");
