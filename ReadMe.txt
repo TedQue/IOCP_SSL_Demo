@@ -80,7 +80,10 @@ screenshot.png
 ================================================================
 附3: 更新日志
 2021/6/7
+v0.2
 1. 连接成功后自动 postRecv() 不是很好
 	IoSocketImpl 处理 ctl() 如果用户设置了 IO_EVENT_IN 标记才调用 postRecv()
 2. IO_EVENT_RECV 改为 IO_EVENT_IN, IO_EVENT_SEND 改为 IO_EVENT_OUT 同 epoll 风格
-3. v0.2
+
+v0.2.1
+	IoSocketImpl::ctl 设置 _mode 的值错误 IO_EVENT_ET/LT 应该为 IO_MODE_ET/LT

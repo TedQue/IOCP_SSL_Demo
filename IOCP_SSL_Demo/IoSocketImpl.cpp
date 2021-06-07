@@ -686,7 +686,7 @@ int IoSocketImpl::ctl(u_int ev)
 	int oldm = _mode;
 
 	// 记录触发模式
-	_mode = TEST_BIT(ev, IO_EVENT_ET) ? IO_EVENT_ET : IO_EVENT_LT;
+	_mode = TEST_BIT(ev, IO_EVENT_ET) ? IO_MODE_ET : IO_MODE_LT;
 
 	// 如果设置了 IO_EVENT_IN 则投递一个读请求(如果已经有读请求在进行中会忽略)
 	if (TEST_BIT(ev, IO_EVENT_IN))
