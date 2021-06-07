@@ -74,8 +74,8 @@ public:
 * ctl 函数的EVENT定义
 */
 #define IO_EVENT_NONE			0x00
-#define IO_EVENT_RECV			0x01 /* recv or accept available */
-#define IO_EVENT_SEND			0x02 /* send available or connect done */
+#define IO_EVENT_IN				0x01 /* recv or accept available */
+#define IO_EVENT_OUT			0x02 /* send available or connect done */
 #define IO_EVENT_ERROR			0x10 /* local error occur */
 #define IO_EVENT_HANGUP			0x20 /* peer error occur, hanged up usually | auto set */
 #define IO_EVENT_TIMEOUT		0x40 /* IoSelector doesn't set timeout flag, it's reserved for IoSelector user */

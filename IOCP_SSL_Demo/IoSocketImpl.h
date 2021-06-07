@@ -125,7 +125,7 @@ public:
 	* IoSelectorImpl 调用的函数和数据
 	*/
 	virtual u_int update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
-	virtual int setMode(int m);
+	virtual int ctl(u_int ev);
 	virtual u_int detectEvent();
 
 	SOCKET getSocket();

@@ -15,10 +15,10 @@ by 阙荣文 Que's C++ Studio
 		selector->wait(&socket, &ev);
 		
 		// 分类处理活跃的网络事件
-		if (TEST_BIT(ev, IO_EVENT_SEND))
+		if (TEST_BIT(ev, IO_EVENT_OUT))
 		{
 		}
-		else if (TEST_BIT(ev, IO_EVENT_RECV))
+		else if (TEST_BIT(ev, IO_EVENT_IN))
 		{
 		}
 		else
@@ -59,6 +59,7 @@ SSL_write() 把所有数据全部写入内存,为了避免出现这种情况,只好修改调用 SSL_write()
 附1: 本项目访问 https://www.baidu.com/ 的效果(证书信息输出在下方的调试器窗口中)
 screenshot.png
 
+================================================================
 附2: 我在本机 Windows 10 上编译安装 OpenSSL 说明(如果您无法编译 demo 请对比此安装流程)
 1. 安装 Visual Studio 2019 社区版
 2. 下载 OpenSSL 源码 https://github.com/openssl/openssl ,按照 NOTES-WINDOWS.md 文件说明按部就班操作.
@@ -75,3 +76,11 @@ screenshot.png
 	添加 C:\Program Files (x86)\OpenSSL\include 到 Visual Studio 项目的包含目录
 	添加 C:\Program Files (x86)\OpenSSL\lib 到 Visual Studio 项目的库目录
 	引入库 libcrypto.lib, libssl.lib 依赖
+
+================================================================
+附3: 更新日志
+2021/6/7
+1. 连接成功后自动 postRecv() 不是很好
+	IoSocketImpl 处理 ctl() 如果用户设置了 IO_EVENT_IN 标记才调用 postRecv()
+2. IO_EVENT_RECV 改为 IO_EVENT_IN, IO_EVENT_SEND 改为 IO_EVENT_OUT 同 epoll 风格
+3. v0.2

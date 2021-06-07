@@ -314,19 +314,19 @@ u_int IoSocketSSLImpl::detectEvent()
 	// SSL_pending() 会导致 SSL_read() 返回 -1, 并且 SSL_get_error() 返回 SSL_ERROR_SSL(1) 不知道是怎么回事
 	//if(SSL_pending(_ssl) > 0)
 	//{
-	//	SET_BIT(ev, IO_EVENT_RECV);
+	//	SET_BIT(ev, IO_EVENT_IN);
 	//}
 
-	// 用户应该包容这种情况: wait() 返回 IO_EVENT_RECV 事件,但是调用 recv() 却返回 -1,因为SSL recv 是按照 SSL Record 语义处理的.
+	// 用户应该包容这种情况: wait() 返回 IO_EVENT_IN 事件,但是调用 recv() 却返回 -1,因为SSL recv 是按照 SSL Record 语义处理的.
 
 	if(_canRecv)
 	{
-		SET_BIT(ev, IO_EVENT_RECV);
+		SET_BIT(ev, IO_EVENT_IN);
 	}
 
 	if(_canSend)
 	{
-		SET_BIT(ev, IO_EVENT_SEND);
+		SET_BIT(ev, IO_EVENT_OUT);
 	}
 	return ev;
 }
@@ -366,7 +366,7 @@ u_int IoSocketSSLImpl::sslHandshake(u_int ev)
 		}
 
 		// 握手完成,标记为可写
-		SET_BIT(ev, IO_EVENT_SEND);
+		SET_BIT(ev, IO_EVENT_OUT);
 	}
 	else
 	{
