@@ -124,7 +124,7 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 			}
 			else if(acceptBy->type() == IO_TYPE_SOCKET_SSL)
 			{
-				newAdp = new IoSocketSSLImpl(getSSLCtx(), s);
+				newAdp = new IoSocketSSLImpl(getSSLCtx(), s, &sockname, &peername);
 			}
 			else
 			{

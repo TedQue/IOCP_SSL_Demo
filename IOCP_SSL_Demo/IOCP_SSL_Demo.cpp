@@ -110,10 +110,14 @@ int main(int argc, const char *argv[])
 		}
 		else if (TEST_BIT(ev, IO_EVENT_RECV))
 		{
+			// 一直读取直到返回 0 或 -1 表示缓冲区已空
 			char buf[8192] = {};
-			actAdp->recv(buf, 8192);
-
-			std::cout << buf << std::flush;
+			int r = 0;
+			while ((r = actAdp->recv(buf, 8191)) > 0)
+			{
+				buf[r] = 0;
+				std::cout << buf << std::flush;
+			}
 		}
 		else
 		{
