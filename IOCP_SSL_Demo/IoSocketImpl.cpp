@@ -1,8 +1,6 @@
 #include <assert.h>
 #include "IoSocketImpl.h"
-
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
 
 #define MIN_SOCKADDR_BUF_SIZE (sizeof(sockaddr_in) + 16)
 
@@ -560,7 +558,6 @@ int IoSocketImpl::postRecv()
 	if(_recvOlp.ipos > 0)
 	{
 		// 只要缓冲区内还有数据,就不投递下一个 iocp 操作,和 send 的逻辑有点不一样.
-		assert(0);
 	}
 	else
 	{
@@ -684,12 +681,26 @@ int IoSocketImpl::postSend()
 	}
 }
 
-int IoSocketImpl::setMode(int m)
+int IoSocketImpl::ctl(u_int ev)
 {
-	int oldm = IO_MODE_LT;
+	int oldm = _mode;
 
-	oldm = _mode;
-	_mode = m;
+	// 记录触发模式
+	_mode = TEST_BIT(ev, IO_EVENT_ET) ? IO_EVENT_ET : IO_EVENT_LT;
+
+	// 如果设置了 IO_EVENT_IN 则投递一个读请求(如果已经有读请求在进行中会忽略)
+	if (TEST_BIT(ev, IO_EVENT_IN))
+	{
+		int pr = postRecv();
+		if (pr == 0 || pr == WSA_IO_PENDING)
+		{
+		}
+		else
+		{
+			setLastError(pr);
+			setStatus(IO_STATUS_BROKEN);
+		}
+	}
 
 	return oldm;
 }
@@ -728,7 +739,7 @@ u_int IoSocketImpl::detectEvent()
 			// 输入缓冲内有数据,或者侦听套接字没有在投递 IOCP 操作(说明已经完成了一次 ACCEPTEX) -> 可读
 			if((_recvOlp.upos < _recvOlp.ipos) || (_recvOlp.oppType == IO_OPP_NONE && _status == IO_STATUS_LISTENING))
 			{
-				SET_BIT(ev, IO_EVENT_RECV);
+				SET_BIT(ev, IO_EVENT_IN);
 			}
 		}
 
@@ -746,7 +757,7 @@ u_int IoSocketImpl::detectEvent()
 			// 状态正常,并且输出缓冲内还有空闲空间 -> 可写
 			if(_status > 0 && (_sendOlp.upos < _sendOlp.len))
 			{
-				SET_BIT(ev, IO_EVENT_SEND);
+				SET_BIT(ev, IO_EVENT_OUT);
 			}
 		}
 	}
@@ -765,7 +776,7 @@ u_int IoSocketImpl::onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTr
 		}
 
 		/* 触发可读事件(进入IOSelector的可读队列) */
-		ev = IO_EVENT_RECV;
+		ev = IO_EVENT_IN;
 	}
 	else
 	{
@@ -788,7 +799,7 @@ u_int IoSocketImpl::onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTr
 		{
 			/* 确认不是本地套接字错误导致 IOCP 失败 */
 			// assert(WSAGetLastError() == WSAECONNRESET);
-			ev = IO_EVENT_RECV;
+			ev = IO_EVENT_IN;
 		}
 		else
 		{
@@ -813,7 +824,7 @@ u_int IoSocketImpl::onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 		setStatus(IO_STATUS_CONNECTED);
 
 		// 新连接的套接字处于可写状态,触发可写事件
-		ev = IO_EVENT_SEND;
+		ev = IO_EVENT_OUT;
 
 		/* 更新套接字状态(好像没什么用) */
 		if(0 != ::setsockopt(_s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0))
@@ -827,18 +838,6 @@ u_int IoSocketImpl::onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 		{
 			DWORD err = WSAGetLastError();
 			assert(0);
-		}
-
-		/* 连接成功后投递一个 recv 操作 */
-		int pr = postRecv();
-		if(pr == 0 || pr == WSA_IO_PENDING)
-		{
-		}
-		else
-		{
-			// 连接虽然成功,但是 recv 失败,所以把套接字标记为损坏,用户下次调用 wait() 可以检测到这个错误
-			setLastError(pr);
-			setStatus(IO_STATUS_BROKEN);
 		}
 	}
 	else
@@ -868,7 +867,7 @@ u_int IoSocketImpl::onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 			{
 				if(_recvOlp.et)
 				{
-					ev = IO_EVENT_RECV;
+					ev = IO_EVENT_IN;
 					_recvOlp.et = false;
 				}
 				else
@@ -878,7 +877,7 @@ u_int IoSocketImpl::onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 			}
 			else
 			{
-				ev = IO_EVENT_RECV;
+				ev = IO_EVENT_IN;
 			}
 
 			/* 只要接受缓冲内还有数据就不继续投递 recv 操作, 由用户调用 recv() 触发*/
@@ -917,7 +916,7 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 			{
 				if(_sendOlp.et)
 				{
-					ev = IO_EVENT_SEND;
+					ev = IO_EVENT_OUT;
 					_sendOlp.et = false;
 				}
 				else
@@ -927,7 +926,7 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 			}
 			else
 			{
-				ev = IO_EVENT_SEND;
+				ev = IO_EVENT_OUT;
 			}
 
 			/* send 的逻辑是只要发送缓冲区内还有数据,就必须继续发送 */

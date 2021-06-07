@@ -49,7 +49,7 @@ int resolve(const char* host, char* addr)
 int main(int argc, const char *argv[])
 {
 	std::cout << "Welcome to the world of IOCP and OpenSSL" << std::endl;
-	std::cout << "demo v0.1 by Que's C++ Studio\r\n" << std::endl;
+	std::cout << "demo v0.2 by Que's C++ Studio\r\n" << std::endl;
 
 	if (argc < 2)
 	{
@@ -82,7 +82,7 @@ int main(int argc, const char *argv[])
 	adp->connect(ip, url.port());
 
 	// 连接完成时将触发可写事件
-	sel->ctl(adp, IO_EVENT_SEND);
+	sel->ctl(adp, IO_EVENT_OUT);
 
 	IoSocket* actAdp = NULL;
 	unsigned int ev = IO_EVENT_NONE;
@@ -97,7 +97,7 @@ int main(int argc, const char *argv[])
 		}
 
 		// 分类处理活跃的网络事件
-		if (TEST_BIT(ev, IO_EVENT_SEND))
+		if (TEST_BIT(ev, IO_EVENT_OUT))
 		{
 			// 第一次触发可写事件,连接成功,发送 http 请求
 			std::cout << "connected, sending http request ..." << std::endl;
@@ -115,9 +115,9 @@ int main(int argc, const char *argv[])
 			adp_puts(actAdp, "\r\n");
 
 			// 发送的请求较短,不需要再次等待可写事件,准备接收响应
-			sel->ctl(actAdp, IO_EVENT_RECV);
+			sel->ctl(actAdp, IO_EVENT_IN);
 		}
-		else if (TEST_BIT(ev, IO_EVENT_RECV))
+		else if (TEST_BIT(ev, IO_EVENT_IN))
 		{
 			// 一直读取直到返回 0 或 -1 表示缓冲区已空
 			char buf[8192] = {};
@@ -125,8 +125,15 @@ int main(int argc, const char *argv[])
 			while ((r = actAdp->recv(buf, 8191)) > 0)
 			{
 				buf[r] = 0;
-				std::cout << buf << std::flush;
-				if(d) fwrite(buf, 1, r, d);
+				if (d)
+				{
+					fwrite(buf, 1, r, d);
+					std::cout << "recv: " << r << " bytes" << std::endl;
+				}
+				else
+				{
+					std::cout << buf << std::flush;
+				}
 			}
 		}
 		else

@@ -221,8 +221,8 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 		sockInfo->isInQueue = false;
 	}
 
-	// 设置工作模式
-	adpImpl->setMode(TEST_BIT(ev, IO_EVENT_ET) ? IO_MODE_ET : IO_MODE_LT);
+	// adp 也需要处理
+	adpImpl->ctl(ev);
 
 	// 清空当前事件,设置新的事件屏蔽位
 	sockInfo->curEvent = IO_EVENT_NONE;
