@@ -90,3 +90,6 @@ IoSocketImpl::ctl 设置 _mode 的值错误 IO_EVENT_ET/LT 应该为 IO_MODE_ET/
 
 v0.2.2
 所有文件保存为 utf-8 bom 格式
+
+v0.2.3
+移除 x64 配置
