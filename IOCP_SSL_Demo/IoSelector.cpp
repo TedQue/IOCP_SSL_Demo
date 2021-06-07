@@ -1,4 +1,4 @@
-#include <assert.h>
+Ôªø#include <assert.h>
 #include "IoSelectorImpl.h"
 //////////////////////////////////////////////////////////////////////////
 //																		//
@@ -8,7 +8,7 @@
 int IoSelector_Init()
 {
 	/*
-	* ≥ı ºªØ WinSock
+	* ÂàùÂßãÂåñ WinSock
 	*/
 	WORD ver = MAKEWORD(2,2);
 	WSADATA wd;
@@ -18,7 +18,7 @@ int IoSelector_Init()
 	}
 
 	/*
-	* ≥ı ºªØ OpenSSL ø‚
+	* ÂàùÂßãÂåñ OpenSSL Â∫ì
 	*/
     SSL_library_init();
 	SSL_load_error_strings();
@@ -29,14 +29,14 @@ int IoSelector_Init()
 int IoSelector_Cleanup()
 {
 	/*
-	* «Â≥˝ OpenSSL ø‚
+	* Ê∏ÖÈô§ OpenSSL Â∫ì
 	*/
 	ERR_free_strings();
 	EVP_cleanup();
 	//CRYPTO_cleanup_all_ex_data();
 
 	/*
-	* «Â≥˝ WinSock ø‚
+	* Ê∏ÖÈô§ WinSock Â∫ì
 	*/
 	WSACleanup();
 	return 0;

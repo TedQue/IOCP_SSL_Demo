@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include "IoSocketImpl.h"
 #include "IoSocketSSLImpl.h"
 
-// IoSelectorImpl Ê¹ÓÃµÄ,¹ØÁªµ½Ã¿¸ö IoSocketImpl ¶ÔÏóµÄĞÅÏ¢
+// IoSelectorImpl ä½¿ç”¨çš„,å…³è”åˆ°æ¯ä¸ª IoSocketImpl å¯¹è±¡çš„ä¿¡æ¯
 typedef struct
 {
 	bool isInQueue;

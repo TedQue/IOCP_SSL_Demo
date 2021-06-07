@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -7,7 +7,7 @@
 #include "IoSocketImpl.h"
 
 /*
-* Ê¹ÓÃ OpenSSL ¿âÊµÏÖ IoSocket
+* ä½¿ç”¨ OpenSSL åº“å®ç° IoSocket
 *
 *
 */
@@ -28,13 +28,13 @@ public:
 	IoSocketSSLImpl(SSL_CTX* sslCtx, SOCKET s, const sockaddr* sockname = NULL, const sockaddr* peername = NULL);
 	virtual ~IoSocketSSLImpl();
 
-	// Ğ´Èë/¶ÁÈ¡Ô­Ê¼Êı¾İ(ÓÉ BIO µ÷ÓÃ)
+	// å†™å…¥/è¯»å–åŸå§‹æ•°æ®(ç”± BIO è°ƒç”¨)
 	int recvRaw(void* buf, size_t len);
 	int sendRaw(const void* buf, size_t len);
 
 	virtual int type() const { return IO_TYPE_SOCKET_SSL; }
 
-	// ÖØÔØ·¢ËÍ½ÓÊÕ½Ó¿Ú,Ê¹ÓÃ SSL_read / SSL_write
+	// é‡è½½å‘é€æ¥æ”¶æ¥å£,ä½¿ç”¨ SSL_read / SSL_write
 	virtual int recv(void* buf, size_t len);
 	virtual int send(const void* buf, size_t len);
 	virtual int shutdown(int how);

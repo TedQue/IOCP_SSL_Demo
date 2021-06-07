@@ -1,11 +1,11 @@
-#include <assert.h>
+ï»¿#include <assert.h>
 #include "IoSocketImpl.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #define MIN_SOCKADDR_BUF_SIZE (sizeof(sockaddr_in) + 16)
 
 /*
-* ¹¤¾ßº¯Êı
+* å·¥å…·å‡½æ•°
 */
 static bool is_socket_listening(SOCKET s)
 {
@@ -48,9 +48,9 @@ static int get_socket_type(SOCKET s)
 IoSocketImpl::IoSocketImpl(SOCKET s, const sockaddr* sockname, const sockaddr* peername)
 {
 	/*
-	* ±£´æÕâ¸öÒÑ¾­Á¬½ÓµÄÌ×½Ó×Ö
+	* ä¿å­˜è¿™ä¸ªå·²ç»è¿æ¥çš„å¥—æ¥å­—
 	*/
-	// ÉèÖÃ³õÊ¼×´Ì¬
+	// è®¾ç½®åˆå§‹çŠ¶æ€
 	_status = IO_STATUS_DISCONNECT;
 	if(s == INVALID_SOCKET)
 	{
@@ -76,7 +76,7 @@ IoSocketImpl::IoSocketImpl(SOCKET s, const sockaddr* sockname, const sockaddr* p
 	assert(_s != INVALID_SOCKET);
 
 	/*
-	* ·ÖÅä½ÓÊÕ»º³åÇøºÍ·¢ËÍ»º³åÇø
+	* åˆ†é…æ¥æ”¶ç¼“å†²åŒºå’Œå‘é€ç¼“å†²åŒº
 	*/
 	memset(&_sendOlp, 0, sizeof(iocp_overlapped_t));
 	memset(&_recvOlp, 0, sizeof(iocp_overlapped_t));
@@ -85,7 +85,7 @@ IoSocketImpl::IoSocketImpl(SOCKET s, const sockaddr* sockname, const sockaddr* p
 	_sendOlp.buf = new byte[SEND_BUF_LEN];
 	_recvOlp.buf = new byte[RECV_BUF_LEN];
 
-	// ±£´æÌ×½Ó×ÖµØÖ·
+	// ä¿å­˜å¥—æ¥å­—åœ°å€
 	if(sockname)
 	{
 		_sockname = *sockname;
@@ -135,7 +135,7 @@ int IoSocketImpl::setLastError(int err)
 {
 	if(err == WSA_IO_PENDING || err == WSAEWOULDBLOCK)
 	{
-		// ÕâÁ½ÖÖÆ½Ì¨Ïà¹ØµÄ¿ÉÒÔÖØÊÔµÄ´íÎóÂë×ª»»ÎªÆ½Ì¨ÎŞ¹ØµÄ¿ÉÖØÊÔ´íÎóÂë
+		// è¿™ä¸¤ç§å¹³å°ç›¸å…³çš„å¯ä»¥é‡è¯•çš„é”™è¯¯ç è½¬æ¢ä¸ºå¹³å°æ— å…³çš„å¯é‡è¯•é”™è¯¯ç 
 		err = IO_EAGAIN;
 	}
 
@@ -203,7 +203,7 @@ int IoSocketImpl::bind(const char* ipAddr, u_short port)
 	}
 	else
 	{
-		// ±£´æ±¾µØµØÖ·
+		// ä¿å­˜æœ¬åœ°åœ°å€
 		int len = sizeof(sockaddr);
 		if(0 != ::getsockname(_s, &_sockname, &len))
 		{
@@ -250,19 +250,19 @@ int IoSocketImpl::listen(int backlog /* = SOMAXCONN */)
 	int r = ::listen(_s, backlog);
 	if( 0 == r )
 	{
-		// ÉèÖÃÎªÕìÌı×´Ì¬
+		// è®¾ç½®ä¸ºä¾¦å¬çŠ¶æ€
 		setStatus(IO_STATUS_LISTENING);
 
-		// listen() ÒÑ¾­³É¹¦, ËùÒÔ r = 0
-		// listen µ÷ÓÃ³É¹¦Ôò×Ô¶¯·¢ÆğÒ»¸ö accept ²Ù×÷,ÔÚÕâ¸ö²Ù×÷Íê³ÉÊ±, IoSocket ×´Ì¬±äÎª¿É¶Á;Èç¹û·¢Éú´íÎóÒ²ÊÇÔÚÏÂÒ»´ÎÓÃ»§µ÷ÓÃ wait Ö®ºó·µ»Ø
+		// listen() å·²ç»æˆåŠŸ, æ‰€ä»¥ r = 0
+		// listen è°ƒç”¨æˆåŠŸåˆ™è‡ªåŠ¨å‘èµ·ä¸€ä¸ª accept æ“ä½œ,åœ¨è¿™ä¸ªæ“ä½œå®Œæˆæ—¶, IoSocket çŠ¶æ€å˜ä¸ºå¯è¯»;å¦‚æœå‘ç”Ÿé”™è¯¯ä¹Ÿæ˜¯åœ¨ä¸‹ä¸€æ¬¡ç”¨æˆ·è°ƒç”¨ wait ä¹‹åè¿”å›
 		int pr = postAccept();
 		if(pr == 0 || pr == WSA_IO_PENDING || pr == WSAECONNRESET)
 		{
-			// postAccept() ³É¹¦,ÓÃ»§Í¨¹ı wait() µÃµ½½á¹û
+			// postAccept() æˆåŠŸ,ç”¨æˆ·é€šè¿‡ wait() å¾—åˆ°ç»“æœ
 		}
 		else
 		{
-			// postAccept() ·¢Éú´íÎó,Ì×½Ó×Ö±ê¼ÇÎªËğ»µ
+			// postAccept() å‘ç”Ÿé”™è¯¯,å¥—æ¥å­—æ ‡è®°ä¸ºæŸå
 			setLastError(pr);
 			setStatus(IO_STATUS_BROKEN);
 		}
@@ -287,11 +287,11 @@ int IoSocketImpl::closesocket()
 
 	if(_s != INVALID_SOCKET)
 	{
-		// Ö±½Ó¹Ø±ÕÌ×½Ó×ÖÊ¹ÒÑ¾­Í¶µİµÄ IOCP ²Ù×÷·µ»Ø
+		// ç›´æ¥å…³é—­å¥—æ¥å­—ä½¿å·²ç»æŠ•é€’çš„ IOCP æ“ä½œè¿”å›
 		::closesocket(_s);
 		_s = INVALID_SOCKET;
 
-		// ÉèÖÃÌ×½Ó×Ö×´Ì¬ÎªÒÑ¹Ø±Õ
+		// è®¾ç½®å¥—æ¥å­—çŠ¶æ€ä¸ºå·²å…³é—­
 		setStatus(IO_STATUS_CLOSED);
 	}
 
@@ -308,7 +308,7 @@ int IoSocketImpl::closesocket()
 
 int IoSocketImpl::shutdown(int how)
 {
-	// ÉèÖÃÒ»¸öshutdown±ê¼Ç
+	// è®¾ç½®ä¸€ä¸ªshutdownæ ‡è®°
 
 	_shutdownFlag = how;
 	setStatus(IO_STATUS_SHUTDOWN);
@@ -322,11 +322,11 @@ int IoSocketImpl::accept(SOCKET* s, sockaddr* sockname, sockaddr* peername)
 
 	if(_recvOlp.oppType == IO_OPP_NONE)
 	{
-		// AccpetExµ÷ÓÃÒÑ¾­Íê³É,°ÑĞÂÁ¬½ÓºÍµØÖ··µ»Ø
+		// AccpetExè°ƒç”¨å·²ç»å®Œæˆ,æŠŠæ–°è¿æ¥å’Œåœ°å€è¿”å›
 		if(!_lpfnGetAcceptExAddr)
 		{
 			/*
-			* »ñµÃGetAcceptExSockaddrs()º¯ÊıÖ¸Õë
+			* è·å¾—GetAcceptExSockaddrs()å‡½æ•°æŒ‡é’ˆ
 			*/
 			GUID GuidGetAcceptExAddr = WSAID_GETACCEPTEXSOCKADDRS;
 			DWORD dwBytes = 0;
@@ -348,21 +348,21 @@ int IoSocketImpl::accept(SOCKET* s, sockaddr* sockname, sockaddr* peername)
 			memcpy(peername, peerSockName, peerSockNameLen);
 		}
 
-		// ·¢ÆğÏÂÒ»¸öIO
+		// å‘èµ·ä¸‹ä¸€ä¸ªIO
 		int pr = postAccept();
 		if(pr == 0 || pr == WSA_IO_PENDING || pr == WSAECONNRESET)
 		{
 		}
 		else
 		{
-			// ¼ÇÂ¼´íÎó,°Ñµ±Ç°Ì×½Ó×Ö±ê¼ÇÎªËğ»µ,±¾´Î accept() ·µ»Ø³É¹¦(ÒòÎªµÄÈ·³É¹¦ÁË),ÓÃ»§ÔÙÍ¨¹ı wait() µÈ´ıµ±Ç°Ì×½Ó×Ö(ÕìÌıÌ×½Ó×Ö)»á·¢ÏÖ´íÎó
+			// è®°å½•é”™è¯¯,æŠŠå½“å‰å¥—æ¥å­—æ ‡è®°ä¸ºæŸå,æœ¬æ¬¡ accept() è¿”å›æˆåŠŸ(å› ä¸ºçš„ç¡®æˆåŠŸäº†),ç”¨æˆ·å†é€šè¿‡ wait() ç­‰å¾…å½“å‰å¥—æ¥å­—(ä¾¦å¬å¥—æ¥å­—)ä¼šå‘ç°é”™è¯¯
 			setLastError(pr);
 			setStatus(IO_STATUS_BROKEN);
 		}
 	}
 	else
 	{
-		// ÓĞIO²Ù×÷ÕıÔÚ½øĞĞ,¿ÉÒÔÖØÊÔ
+		// æœ‰IOæ“ä½œæ­£åœ¨è¿›è¡Œ,å¯ä»¥é‡è¯•
 		setLastError(WSA_IO_PENDING);
 		ret = SOCKET_ERROR;
 	}
@@ -373,7 +373,7 @@ int IoSocketImpl::accept(SOCKET* s, sockaddr* sockname, sockaddr* peername)
 
 int IoSocketImpl::postAccept()
 {
-	/* ÓĞIO²Ù×÷ÕıÔÚ½øĞĞ»òÕßÒÑ¾­Íê³ÉÁËÒ»´ÎÁ¬½Óµ«ĞÂÁ¬½ÓµÄÌ×½Ó×ÖÃ»ÓĞ±»È¡×ß */
+	/* æœ‰IOæ“ä½œæ­£åœ¨è¿›è¡Œæˆ–è€…å·²ç»å®Œæˆäº†ä¸€æ¬¡è¿æ¥ä½†æ–°è¿æ¥çš„å¥—æ¥å­—æ²¡æœ‰è¢«å–èµ° */
 	if(_recvOlp.oppType != IO_OPP_NONE || _newSock != INVALID_SOCKET)
 	{
 		assert(0);
@@ -388,7 +388,7 @@ int IoSocketImpl::postAccept()
 	if(!_lpfnAcceptEx)
 	{
 		/*
-		* »ñµÃAcceptEx()º¯ÊıÖ¸Õë
+		* è·å¾—AcceptEx()å‡½æ•°æŒ‡é’ˆ
 		*/
 		GUID GuidAcceptEx = WSAID_ACCEPTEX;
 		DWORD dwBytes = 0;
@@ -400,12 +400,12 @@ int IoSocketImpl::postAccept()
 	}
 
 	/*
-	* ´´½¨Ò»¸öĞÂµÄÌ×½Ó×Ö(accept µ÷ÓÃµÄÖ»ÄÜÊÇTCPÁ÷Ì×½Ó×Ö)
+	* åˆ›å»ºä¸€ä¸ªæ–°çš„å¥—æ¥å­—(accept è°ƒç”¨çš„åªèƒ½æ˜¯TCPæµå¥—æ¥å­—)
 	*/
 	_newSock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	assert(_newSock != INVALID_SOCKET);
 
-	// ·¢ÆğÒ»¸ö IOCP AcceptEx µ÷ÓÃ
+	// å‘èµ·ä¸€ä¸ª IOCP AcceptEx è°ƒç”¨
 	DWORD dwBytesReceived = 0;
 	_recvOlp.oppType = IO_OPP_ACCEPT;
 	if(!_lpfnAcceptEx(_s, _newSock, _acceptBuf, 0, MIN_SOCKADDR_BUF_SIZE, MIN_SOCKADDR_BUF_SIZE, &dwBytesReceived, (OVERLAPPED*)&_recvOlp))
@@ -415,10 +415,10 @@ int IoSocketImpl::postAccept()
 	return 0;
 }
 
-// Ó¦ÓÃµ÷ÓÃ connect º¯Êıºó,¼ì²â IoSocket ×´Ì¬±äÎª¿ÉĞ´Ôò±íÊ¾Á¬½Ó½¨Á¢³É¹¦;×´Ì¬±äÎªÒì³£Ôò±íÊ¾Á¬½Ó½¨Á¢Ê§°Ü.
+// åº”ç”¨è°ƒç”¨ connect å‡½æ•°å,æ£€æµ‹ IoSocket çŠ¶æ€å˜ä¸ºå¯å†™åˆ™è¡¨ç¤ºè¿æ¥å»ºç«‹æˆåŠŸ;çŠ¶æ€å˜ä¸ºå¼‚å¸¸åˆ™è¡¨ç¤ºè¿æ¥å»ºç«‹å¤±è´¥.
 int IoSocketImpl::connect(const char* ip, unsigned short port)
 {
-	/* ¼ÓËø,·ÀÖ¹ÓÃ»§ÖØ¸´µ÷ÓÃ */
+	/* åŠ é”,é˜²æ­¢ç”¨æˆ·é‡å¤è°ƒç”¨ */
 	int ret = 0;
 	int pr = postConnect(ip, port);
 	if(pr == 0 || pr == WSA_IO_PENDING)
@@ -436,7 +436,7 @@ int IoSocketImpl::connect(const char* ip, unsigned short port)
 int IoSocketImpl::postConnect(const char *ipAddr, u_short port)
 {
 	/*
-	* È¡µÃConnectExº¯ÊıÖ¸Õë
+	* å–å¾—ConnectExå‡½æ•°æŒ‡é’ˆ
 	*/
 	
 	GUID GuidConnectEx = WSAID_CONNECTEX;
@@ -449,7 +449,7 @@ int IoSocketImpl::postConnect(const char *ipAddr, u_short port)
 	}
 
 	/*
-	* Ö´ĞĞConnectEx
+	* æ‰§è¡ŒConnectEx
 	*/
 	_sendOlp.oppType = IO_OPP_CONNECT;
 
@@ -471,12 +471,12 @@ int IoSocketImpl::recv(void* buf, size_t len)
 {
 	int ret = 0;
 
-	// ¸´ÖÆ»º³åÇøÄÚµÄÊı¾İ
+	// å¤åˆ¶ç¼“å†²åŒºå†…çš„æ•°æ®
 
-	/* ÊÇ·ñÒÑ¾­½ûÖ¹½ÓÊÕ */
+	/* æ˜¯å¦å·²ç»ç¦æ­¢æ¥æ”¶ */
 	if(_shutdownFlag == SD_RECEIVE || _shutdownFlag == SD_BOTH)
 	{
-		// ÒÑ¾­¹Ø±Õ
+		// å·²ç»å…³é—­
 		ret = SOCKET_ERROR;
 		setLastError(WSAESHUTDOWN);
 	}
@@ -491,23 +491,23 @@ int IoSocketImpl::recv(void* buf, size_t len)
 			}
 			_recvOlp.upos += len;
 
-			/* Êı¾İ¿½±´³É¹¦,·µ»Ø¿½±´³¤¶È */
+			/* æ•°æ®æ‹·è´æˆåŠŸ,è¿”å›æ‹·è´é•¿åº¦ */
 			ret = len;
 		}
 		else
 		{
-			/* ·µ»ØÊ§°Ü */
+			/* è¿”å›å¤±è´¥ */
 			ret = SOCKET_ERROR;
 		}
 
-		// Êı¾İÒÑ¾­±»¶ÁÈ¡Íê±Ï,±ßÔµ´¥·¢,ÔÙÍ¶µİÒ»¸ö recv iocp ÇëÇó
+		// æ•°æ®å·²ç»è¢«è¯»å–å®Œæ¯•,è¾¹ç¼˜è§¦å‘,å†æŠ•é€’ä¸€ä¸ª recv iocp è¯·æ±‚
 		if(_recvOlp.upos >= _recvOlp.ipos)
 		{
-			/* ±ßÔµ´¥·¢±ê¼Ç */
+			/* è¾¹ç¼˜è§¦å‘æ ‡è®° */
 			_recvOlp.et = true;
 
-			/* Í¶µİÒ»¸ö recv ²Ù×÷ */
-			// ³¢ÊÔ·¢ÆğÒ»¸öRECV IO(Ö»ÓĞµ±»º³åÇøÄÚÃ»ÓĞÊı¾İ²Å»áÕæÕıÍ¶µİ recv iocp²Ù×÷)
+			/* æŠ•é€’ä¸€ä¸ª recv æ“ä½œ */
+			// å°è¯•å‘èµ·ä¸€ä¸ªRECV IO(åªæœ‰å½“ç¼“å†²åŒºå†…æ²¡æœ‰æ•°æ®æ‰ä¼šçœŸæ­£æŠ•é€’ recv iocpæ“ä½œ)
 			int pr = postRecv();
 			if(pr == 0 || pr == WSA_IO_PENDING)
 			{
@@ -520,7 +520,7 @@ int IoSocketImpl::recv(void* buf, size_t len)
 			}
 			else
 			{
-				/* ¼ì²âµ½Ò»¸ö±¾µØ´íÎó */
+				/* æ£€æµ‹åˆ°ä¸€ä¸ªæœ¬åœ°é”™è¯¯ */
 				setLastError(pr);
 				setStatus(IO_STATUS_BROKEN);
 			}
@@ -530,18 +530,18 @@ int IoSocketImpl::recv(void* buf, size_t len)
 }
 
 /*
-* recv io Ìá½»µÄ»º³åÇø×ÜÊÇ´Ó [ipos -> end), »º³åÇøÄÚÓĞĞ§Êı¾İµÄ·¶Î§ÊÇ [upos -> ipos) ÎŞĞ§Êı¾İ(ÒÑ¾­±»user¶ÁÈ¡)·¶Î§ÊÇ [start, upos)
+* recv io æäº¤çš„ç¼“å†²åŒºæ€»æ˜¯ä» [ipos -> end), ç¼“å†²åŒºå†…æœ‰æ•ˆæ•°æ®çš„èŒƒå›´æ˜¯ [upos -> ipos) æ— æ•ˆæ•°æ®(å·²ç»è¢«userè¯»å–)èŒƒå›´æ˜¯ [start, upos)
 */
 int IoSocketImpl::postRecv()
 {
 	if(_shutdownFlag == SD_RECEIVE || _shutdownFlag == SD_BOTH)
 	{
-		// Èç¹ûÒÑ¾­½ûÖ¹ÁË½ÓÊÕ¾Í²»Ó¦¸Ãµ÷ÓÃ postRecv()
+		// å¦‚æœå·²ç»ç¦æ­¢äº†æ¥æ”¶å°±ä¸åº”è¯¥è°ƒç”¨ postRecv()
 		assert(0);
 		return WSAESHUTDOWN;
 	}
 
-	/* ÓĞIO²Ù×÷ÕıÔÚ½øĞĞ */
+	/* æœ‰IOæ“ä½œæ­£åœ¨è¿›è¡Œ */
 	if(_recvOlp.oppType != IO_OPP_NONE)
 	{
 		assert(_recvOlp.oppType == IO_OPP_RECV);
@@ -549,7 +549,7 @@ int IoSocketImpl::postRecv()
 	}
 
 	/*
-	* ÉèÖÃ»º³åÇø,¶ªÆúÒÑ¾­¶ÁÈ¡µÄ²¿·Ö
+	* è®¾ç½®ç¼“å†²åŒº,ä¸¢å¼ƒå·²ç»è¯»å–çš„éƒ¨åˆ†
 	*/
 	memmove(_recvOlp.buf, _recvOlp.buf + _recvOlp.upos, _recvOlp.ipos - _recvOlp.upos);
 	_recvOlp.ipos -= _recvOlp.upos;
@@ -557,19 +557,19 @@ int IoSocketImpl::postRecv()
 	
 	if(_recvOlp.ipos > 0)
 	{
-		// Ö»Òª»º³åÇøÄÚ»¹ÓĞÊı¾İ,¾Í²»Í¶µİÏÂÒ»¸ö iocp ²Ù×÷,ºÍ send µÄÂß¼­ÓĞµã²»Ò»Ñù.
+		// åªè¦ç¼“å†²åŒºå†…è¿˜æœ‰æ•°æ®,å°±ä¸æŠ•é€’ä¸‹ä¸€ä¸ª iocp æ“ä½œ,å’Œ send çš„é€»è¾‘æœ‰ç‚¹ä¸ä¸€æ ·.
 	}
 	else
 	{
 		/*
-		* Í¶µİÒ»¸öIO RECV ²Ù×÷
+		* æŠ•é€’ä¸€ä¸ªIO RECV æ“ä½œ
 		*/
 		_recvOlp.oppType = IO_OPP_RECV;
 		WSABUF wsaBuf = { _recvOlp.len - _recvOlp.ipos, (char*)_recvOlp.buf + _recvOlp.ipos };
 		DWORD dwFlags = 0;
 		DWORD dwTransfered = 0;
 		assert(wsaBuf.len > 0);
-		assert(wsaBuf.len == RECV_BUF_LEN); // Âß¼­ÉÏ½ÓÊÕ»º³åÎª¿Õ²ÅÍ¶µİ IOCP ²Ù×÷,ËùÒÔ±Ø¶¨Í¶µİÕû¸ö»º³åÇø³¤¶È
+		assert(wsaBuf.len == RECV_BUF_LEN); // é€»è¾‘ä¸Šæ¥æ”¶ç¼“å†²ä¸ºç©ºæ‰æŠ•é€’ IOCP æ“ä½œ,æ‰€ä»¥å¿…å®šæŠ•é€’æ•´ä¸ªç¼“å†²åŒºé•¿åº¦
 
 		if(SOCKET_ERROR == WSARecv(_s, &wsaBuf, 1, &dwTransfered, &dwFlags, (LPOVERLAPPED)&_recvOlp, NULL))
 		{
@@ -584,29 +584,29 @@ int IoSocketImpl::send(const void* buf, size_t len)
 	int ret = 0;
 	if(_shutdownFlag == SD_BOTH || _shutdownFlag == SD_SEND)
 	{
-		// Ì×½Ó×ÖÒÑ¾­±»¹Ø±Õ
+		// å¥—æ¥å­—å·²ç»è¢«å…³é—­
 		ret = SOCKET_ERROR;
 		setLastError(WSAESHUTDOWN);
 	}
 	else
 	{
-		// Ğ´Èë»º³åÇø
+		// å†™å…¥ç¼“å†²åŒº
 		if(len > _sendOlp.len - _sendOlp.upos) len = _sendOlp.len - _sendOlp.upos;
 		if(len > 0)
 		{
 			memcpy(_sendOlp.buf + _sendOlp.upos, buf, len);
 			_sendOlp.upos += len;
 		
-			// ·µ»Ø¿½±´³¤¶È
+			// è¿”å›æ‹·è´é•¿åº¦
 			ret = len;
 
-			// »º³åÇøÒÑÂú,±ßÔµ´¥·¢Ìõ¼şÂú×ã
+			// ç¼“å†²åŒºå·²æ»¡,è¾¹ç¼˜è§¦å‘æ¡ä»¶æ»¡è¶³
 			if(_sendOlp.upos >= _sendOlp.len)
 			{
 				_sendOlp.et = true;
 			}
 		
-			// ³¢ÊÔ·¢ÆğÒ»¸ö send IO
+			// å°è¯•å‘èµ·ä¸€ä¸ª send IO
 			int pr = postSend();
 			if(0 == pr || WSA_IO_PENDING == pr)
 			{
@@ -614,14 +614,14 @@ int IoSocketImpl::send(const void* buf, size_t len)
 			else
 			{
 				assert(pr != WSAESHUTDOWN);
-				// ¼ì²âµ½Ò»¸ö±¾µØ´íÎó,ÏÂ´ÎÓÃ»§µ÷ÓÃ wait() Ê±·µ»ØÕâ¸ö´íÎó
+				// æ£€æµ‹åˆ°ä¸€ä¸ªæœ¬åœ°é”™è¯¯,ä¸‹æ¬¡ç”¨æˆ·è°ƒç”¨ wait() æ—¶è¿”å›è¿™ä¸ªé”™è¯¯
 				setLastError(pr);
 				setStatus(IO_STATUS_BROKEN);
 			}
 		}
 		else
 		{
-			/* »º³åÇøÒÑÂú */
+			/* ç¼“å†²åŒºå·²æ»¡ */
 			ret = SOCKET_ERROR;
 			setLastError(WSA_IO_PENDING);
 		}
@@ -630,19 +630,19 @@ int IoSocketImpl::send(const void* buf, size_t len)
 }
 
 /*
-* send io »º³åÇø·Ö²¼, Ìá½»²¿·Ö [start -> ipos), ÒÑĞ´Î´Ìá½»²¿·Ö [ipos -> upos), ¿ÕÓà²¿·Ö [upos -> end)
+* send io ç¼“å†²åŒºåˆ†å¸ƒ, æäº¤éƒ¨åˆ† [start -> ipos), å·²å†™æœªæäº¤éƒ¨åˆ† [ipos -> upos), ç©ºä½™éƒ¨åˆ† [upos -> end)
 */
 int IoSocketImpl::postSend()
 {
-	/* Èç¹ûÉèÖÃÁË¹Ø±Õ±êÖ¾Ò²Òª¼ÌĞø·¢ËÍÒÑ¾­¿½±´µ½»º³åÇøÄÚµÄÊı¾İ */
-	/* ÓĞIO²Ù×÷ÕıÔÚ½øĞĞ */
+	/* å¦‚æœè®¾ç½®äº†å…³é—­æ ‡å¿—ä¹Ÿè¦ç»§ç»­å‘é€å·²ç»æ‹·è´åˆ°ç¼“å†²åŒºå†…çš„æ•°æ® */
+	/* æœ‰IOæ“ä½œæ­£åœ¨è¿›è¡Œ */
 	if(_sendOlp.oppType != IO_OPP_NONE)
 	{
 		assert(IO_OPP_SEND == _sendOlp.oppType);
 		return WSA_IO_PENDING;
 	}
 
-	/* ÉèÖÃ·¢ËÍ»º³åÇø,°ÑÒÑ¾­·¢ËÍ³É¹¦µÄÊı¾İ¶ªÆú */
+	/* è®¾ç½®å‘é€ç¼“å†²åŒº,æŠŠå·²ç»å‘é€æˆåŠŸçš„æ•°æ®ä¸¢å¼ƒ */
 	assert(_sendOlp.buf);
 	memmove(_sendOlp.buf, _sendOlp.buf + _sendOlp.ipos, _sendOlp.upos - _sendOlp.ipos);
 	_sendOlp.upos -= _sendOlp.ipos;
@@ -650,8 +650,8 @@ int IoSocketImpl::postSend()
 
 	if(_sendOlp.ipos <= 0)
 	{
-		// Êı¾İ·¢ËÍÍê±Ï
-		/* Èç¹ûÉèÖÃÁËshutdown±ê¼Ç,µ±·¢ËÍ»º³åÇøÈ«²¿·¢ËÍÍê±Ïºó·µ»Ø SHUTDOWN */
+		// æ•°æ®å‘é€å®Œæ¯•
+		/* å¦‚æœè®¾ç½®äº†shutdownæ ‡è®°,å½“å‘é€ç¼“å†²åŒºå…¨éƒ¨å‘é€å®Œæ¯•åè¿”å› SHUTDOWN */
 		if(_shutdownFlag == SD_BOTH || _shutdownFlag == SD_SEND)
 		{
 			return WSAESHUTDOWN;
@@ -664,7 +664,7 @@ int IoSocketImpl::postSend()
 	else
 	{
 		/*
-		* Í¶µİÒ»¸öIO SEND ²Ù×÷
+		* æŠ•é€’ä¸€ä¸ªIO SEND æ“ä½œ
 		*/	
 		_sendOlp.oppType = IO_OPP_SEND;
 		DWORD dwTransfered = 0;
@@ -685,10 +685,10 @@ int IoSocketImpl::ctl(u_int ev)
 {
 	int oldm = _mode;
 
-	// ¼ÇÂ¼´¥·¢Ä£Ê½
+	// è®°å½•è§¦å‘æ¨¡å¼
 	_mode = TEST_BIT(ev, IO_EVENT_ET) ? IO_MODE_ET : IO_MODE_LT;
 
-	// Èç¹ûÉèÖÃÁË IO_EVENT_IN ÔòÍ¶µİÒ»¸ö¶ÁÇëÇó(Èç¹ûÒÑ¾­ÓĞ¶ÁÇëÇóÔÚ½øĞĞÖĞ»áºöÂÔ)
+	// å¦‚æœè®¾ç½®äº† IO_EVENT_IN åˆ™æŠ•é€’ä¸€ä¸ªè¯»è¯·æ±‚(å¦‚æœå·²ç»æœ‰è¯»è¯·æ±‚åœ¨è¿›è¡Œä¸­ä¼šå¿½ç•¥)
 	if (TEST_BIT(ev, IO_EVENT_IN))
 	{
 		int pr = postRecv();
@@ -706,9 +706,9 @@ int IoSocketImpl::ctl(u_int ev)
 }
 
 /*
-* ¸ù¾İÌ×½Ó×ÖµÄÄÚ²¿×´Ì¬·µ»ØËùÓĞ»á±»´¥·¢µÄÊÂ¼ş
-* Èç¹ûÌ×½Ó×Ö·¢Éú¹ı**±¾µØ**´íÎóÔò»á´¥·¢ IO_EVENT_ERROR ÊÂ¼ş.ËùÒÔÒ»¸öÒÑ¾­³ö´íµÄÌ×½Ó×Ö·ÅÈë selector ÖĞ×Ü»á±»·µ»Ø.
-* **Ô¶³Ì**´íÎóÔò»á±»ºöÂÔ,Ö±µ½Ö´ĞĞ²Ù×÷ºóÔÙ´Î·¢ÉúÔ¶³Ì´íÎó.
+* æ ¹æ®å¥—æ¥å­—çš„å†…éƒ¨çŠ¶æ€è¿”å›æ‰€æœ‰ä¼šè¢«è§¦å‘çš„äº‹ä»¶
+* å¦‚æœå¥—æ¥å­—å‘ç”Ÿè¿‡**æœ¬åœ°**é”™è¯¯åˆ™ä¼šè§¦å‘ IO_EVENT_ERROR äº‹ä»¶.æ‰€ä»¥ä¸€ä¸ªå·²ç»å‡ºé”™çš„å¥—æ¥å­—æ”¾å…¥ selector ä¸­æ€»ä¼šè¢«è¿”å›.
+* **è¿œç¨‹**é”™è¯¯åˆ™ä¼šè¢«å¿½ç•¥,ç›´åˆ°æ‰§è¡Œæ“ä½œåå†æ¬¡å‘ç”Ÿè¿œç¨‹é”™è¯¯.
 */
 u_int IoSocketImpl::detectEvent()
 {
@@ -728,25 +728,25 @@ u_int IoSocketImpl::detectEvent()
 	}
 	else
 	{
-		// ÅĞ¶ÏÊÇ·ñ¿É¶Á 
-		// (1) (½ÓÊÕ»º³åÄÚÓĞÎ´¶ÁÊı¾İ->ÈÏÎª´¦ÓÚ¾ÍĞ÷×´Ì¬. [start ->(ÒÑ¶Á) -> upos -> (Î´¶Á) -> ipos (¿ÕÏĞ»òIOCP²Ù×÷ÖĞ) -> end])
-		// (2) ÕìÌı×´Ì¬ÏÂ,¿ÕÏĞËµÃ÷ÒÑ¾­ÓĞÒ»¸ö socket ¾ÍĞ÷
+		// åˆ¤æ–­æ˜¯å¦å¯è¯» 
+		// (1) (æ¥æ”¶ç¼“å†²å†…æœ‰æœªè¯»æ•°æ®->è®¤ä¸ºå¤„äºå°±ç»ªçŠ¶æ€. [start ->(å·²è¯») -> upos -> (æœªè¯») -> ipos (ç©ºé—²æˆ–IOCPæ“ä½œä¸­) -> end])
+		// (2) ä¾¦å¬çŠ¶æ€ä¸‹,ç©ºé—²è¯´æ˜å·²ç»æœ‰ä¸€ä¸ª socket å°±ç»ª
 		if(_shutdownFlag == SD_RECEIVE || _shutdownFlag == SD_BOTH)
 		{
 		}
 		else
 		{
-			// ÊäÈë»º³åÄÚÓĞÊı¾İ,»òÕßÕìÌıÌ×½Ó×ÖÃ»ÓĞÔÚÍ¶µİ IOCP ²Ù×÷(ËµÃ÷ÒÑ¾­Íê³ÉÁËÒ»´Î ACCEPTEX) -> ¿É¶Á
+			// è¾“å…¥ç¼“å†²å†…æœ‰æ•°æ®,æˆ–è€…ä¾¦å¬å¥—æ¥å­—æ²¡æœ‰åœ¨æŠ•é€’ IOCP æ“ä½œ(è¯´æ˜å·²ç»å®Œæˆäº†ä¸€æ¬¡ ACCEPTEX) -> å¯è¯»
 			if((_recvOlp.upos < _recvOlp.ipos) || (_recvOlp.oppType == IO_OPP_NONE && _status == IO_STATUS_LISTENING))
 			{
 				SET_BIT(ev, IO_EVENT_IN);
 			}
 		}
 
-		// ÅĞ¶ÏÊÇ·ñ¿ÉĞ´ (Ì×½Ó×ÖÒÑ¾­Á¬½Ó,²¢ÇÒĞ´»º³åÓĞ¿ÕÏĞ¿Õ¼ä)
+		// åˆ¤æ–­æ˜¯å¦å¯å†™ (å¥—æ¥å­—å·²ç»è¿æ¥,å¹¶ä¸”å†™ç¼“å†²æœ‰ç©ºé—²ç©ºé—´)
 		if(_shutdownFlag == SD_SEND || _shutdownFlag == SD_BOTH)
 		{
-			// Ì×½Ó×Ö±»¹Ø±Õ,²¢ÇÒÊı¾İÒÑ¾­·¢ËÍÍê±Ï,Ôò´¥·¢ ERR Ö¸Ê¾ÓÃ»§¿ÉÒÔ°²È«¹Ø±ÕÌ×½Ó×Ö
+			// å¥—æ¥å­—è¢«å…³é—­,å¹¶ä¸”æ•°æ®å·²ç»å‘é€å®Œæ¯•,åˆ™è§¦å‘ ERR æŒ‡ç¤ºç”¨æˆ·å¯ä»¥å®‰å…¨å…³é—­å¥—æ¥å­—
 			if(_sendOlp.ipos == _sendOlp.upos)
 			{
 				SET_BIT(ev, IO_EVENT_ERROR);
@@ -754,7 +754,7 @@ u_int IoSocketImpl::detectEvent()
 		}
 		else
 		{
-			// ×´Ì¬Õı³£,²¢ÇÒÊä³ö»º³åÄÚ»¹ÓĞ¿ÕÏĞ¿Õ¼ä -> ¿ÉĞ´
+			// çŠ¶æ€æ­£å¸¸,å¹¶ä¸”è¾“å‡ºç¼“å†²å†…è¿˜æœ‰ç©ºé—²ç©ºé—´ -> å¯å†™
 			if(_status > 0 && (_sendOlp.upos < _sendOlp.len))
 			{
 				SET_BIT(ev, IO_EVENT_OUT);
@@ -769,41 +769,41 @@ u_int IoSocketImpl::onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTr
 	u_int ev = IO_EVENT_NONE;
 	if(oppResult)
 	{
-		/* ¸üĞÂÌ×½Ó×ÖµØÖ·(ÔÚ WIN7 ÏÂÎŞĞ§,ÓĞĞ§µÄµØÖ·ÔÚ accept() º¯ÊıÖĞÍ¨¹ı GetAcceptExSockaddrs() »ñµÃÕıÈ·µÄµØÖ· ) */
+		/* æ›´æ–°å¥—æ¥å­—åœ°å€(åœ¨ WIN7 ä¸‹æ— æ•ˆ,æœ‰æ•ˆçš„åœ°å€åœ¨ accept() å‡½æ•°ä¸­é€šè¿‡ GetAcceptExSockaddrs() è·å¾—æ­£ç¡®çš„åœ°å€ ) */
 		if(0 != setsockopt( _newSock, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char *)&_s, sizeof(_s)) )
 		{
 			assert(0);
 		}
 
-		/* ´¥·¢¿É¶ÁÊÂ¼ş(½øÈëIOSelectorµÄ¿É¶Á¶ÓÁĞ) */
+		/* è§¦å‘å¯è¯»äº‹ä»¶(è¿›å…¥IOSelectorçš„å¯è¯»é˜Ÿåˆ—) */
 		ev = IO_EVENT_IN;
 	}
 	else
 	{
 		/*
-		* WSAECONNRESET: Ô¶¶ËÁ¬½ÓºóÓÖ±»¹Ø±Õ. ´¥·¢¿É¶ÁÊÂ¼ş,µ«ÊÇµ÷ÓÃ accept »á·µ»ØÒ»¸ö INVALID_SOCKET
-		* 2016.1.8 - ¿ÉÄÜÊÇÕìÌıÌ×½Ó×Ö·¢Éú´íÎó,Ò²¿ÉÄÜÊÇ AcceptEx µ÷ÓÃÊ§°Ü,ÈçºÎÇø±ğ?
+		* WSAECONNRESET: è¿œç«¯è¿æ¥ååˆè¢«å…³é—­. è§¦å‘å¯è¯»äº‹ä»¶,ä½†æ˜¯è°ƒç”¨ accept ä¼šè¿”å›ä¸€ä¸ª INVALID_SOCKET
+		* 2016.1.8 - å¯èƒ½æ˜¯ä¾¦å¬å¥—æ¥å­—å‘ç”Ÿé”™è¯¯,ä¹Ÿå¯èƒ½æ˜¯ AcceptEx è°ƒç”¨å¤±è´¥,å¦‚ä½•åŒºåˆ«?
 		*/
-		// ¹Ø±Õ _newSock,²»¹ÜÊ²Ã´Çé¿ö,_newSock ¶¼ÎŞĞ§ÁË.
+		// å…³é—­ _newSock,ä¸ç®¡ä»€ä¹ˆæƒ…å†µ,_newSock éƒ½æ— æ•ˆäº†.
 		::closesocket(_newSock);
 		_newSock = INVALID_SOCKET;
 
-		/* µ÷ÓÃÃ»¼ÓËøµÄÈ«¾Ö°æ getsockopt */
+		/* è°ƒç”¨æ²¡åŠ é”çš„å…¨å±€ç‰ˆ getsockopt */
 		// int sockerr = 0;
 		// int sockerrlen = sizeof(int);
 		// if(::getsockopt(_s, SOL_SOCKET, SO_ERROR, (char*)&sockerr, &sockerrlen) == 0 && sockerr == 0)
 
-		/* 2016.1.8 - WSAECONNRESET ´íÎóÔÊĞíÕìÌıÌ×½Ó×Ö¼ÌĞøÊ¹ÓÃ,ËùÒÔ±ê¼ÇÎªÔ¶³Ì´íÎó */
+		/* 2016.1.8 - WSAECONNRESET é”™è¯¯å…è®¸ä¾¦å¬å¥—æ¥å­—ç»§ç»­ä½¿ç”¨,æ‰€ä»¥æ ‡è®°ä¸ºè¿œç¨‹é”™è¯¯ */
 		int err = WSAGetLastError();
 		if(err == WSAECONNRESET) 
 		{
-			/* È·ÈÏ²»ÊÇ±¾µØÌ×½Ó×Ö´íÎóµ¼ÖÂ IOCP Ê§°Ü */
+			/* ç¡®è®¤ä¸æ˜¯æœ¬åœ°å¥—æ¥å­—é”™è¯¯å¯¼è‡´ IOCP å¤±è´¥ */
 			// assert(WSAGetLastError() == WSAECONNRESET);
 			ev = IO_EVENT_IN;
 		}
 		else
 		{
-			/* ±¾µØÌ×½Ó×Ö´íÎó */
+			/* æœ¬åœ°å¥—æ¥å­—é”™è¯¯ */
 			assert(0);
 			ev = IO_EVENT_ERROR;
 			setLastError(err);
@@ -817,22 +817,22 @@ u_int IoSocketImpl::onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 {
 	u_int ev = IO_EVENT_NONE;
 
-	/* Á¬½Ó³É¹¦Ôò´¥·¢¿ÉĞ´ÊÂ¼ş,·ñÔò´¥·¢³ö´íÊÂ¼ş(µ÷ÓÃÕßÓ¦¸ÃÄÜÊ¶±ğ³ö´ËÊ±µÄ³ö´íÊÂ¼şÖ¸Á¬½ÓÊ§°Ü) */
+	/* è¿æ¥æˆåŠŸåˆ™è§¦å‘å¯å†™äº‹ä»¶,å¦åˆ™è§¦å‘å‡ºé”™äº‹ä»¶(è°ƒç”¨è€…åº”è¯¥èƒ½è¯†åˆ«å‡ºæ­¤æ—¶çš„å‡ºé”™äº‹ä»¶æŒ‡è¿æ¥å¤±è´¥) */
 	if(oppResult)
 	{
-		// ÉèÖÃ×´Ì¬Îª:ÒÑÁ¬½Ó
+		// è®¾ç½®çŠ¶æ€ä¸º:å·²è¿æ¥
 		setStatus(IO_STATUS_CONNECTED);
 
-		// ĞÂÁ¬½ÓµÄÌ×½Ó×Ö´¦ÓÚ¿ÉĞ´×´Ì¬,´¥·¢¿ÉĞ´ÊÂ¼ş
+		// æ–°è¿æ¥çš„å¥—æ¥å­—å¤„äºå¯å†™çŠ¶æ€,è§¦å‘å¯å†™äº‹ä»¶
 		ev = IO_EVENT_OUT;
 
-		/* ¸üĞÂÌ×½Ó×Ö×´Ì¬(ºÃÏñÃ»Ê²Ã´ÓÃ) */
+		/* æ›´æ–°å¥—æ¥å­—çŠ¶æ€(å¥½åƒæ²¡ä»€ä¹ˆç”¨) */
 		if(0 != ::setsockopt(_s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0))
 		{
 			assert(0);
 		}
 
-		/* ±£´æÔ¶³ÌµØÖ· */
+		/* ä¿å­˜è¿œç¨‹åœ°å€ */
 		int len = sizeof(sockaddr);
 		if(0 != ::getpeername(_s, &_peername, &len))
 		{
@@ -842,7 +842,7 @@ u_int IoSocketImpl::onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 	}
 	else
 	{
-		/* ½ö½ö´¥·¢ÊÂ¼ş,²»ÉèÖÃÌ×½Ó×Ö´íÎóÂë,ÒòÎª»¹¿ÉÒÔÔÙ´Îµ÷ÓÃ Connect ³¢ÊÔÁ¬½Ó */
+		/* ä»…ä»…è§¦å‘äº‹ä»¶,ä¸è®¾ç½®å¥—æ¥å­—é”™è¯¯ç ,å› ä¸ºè¿˜å¯ä»¥å†æ¬¡è°ƒç”¨ Connect å°è¯•è¿æ¥ */
 		ev = IO_EVENT_HANGUP;
 	}
 
@@ -853,10 +853,10 @@ u_int IoSocketImpl::onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 {
 	u_int ev = IO_EVENT_NONE;
 
-	/* Ö»ÓĞ½ÓÊÕ»º³åÇøÎª¿ÕÊ±²Å»áÍ¶µİ IOCP ²Ù×÷ */
+	/* åªæœ‰æ¥æ”¶ç¼“å†²åŒºä¸ºç©ºæ—¶æ‰ä¼šæŠ•é€’ IOCP æ“ä½œ */
 	assert(_recvOlp.ipos == 0 && _recvOlp.upos == 0);
 
-	// ÒòÎª²»»áÍ¶µİ³¤¶ÈÎª0µÄ recv ÇëÇó,ËùÒÔ bytesTransfered = 0 Ò²ÊÇÊ§°Ü(²»Ó¦¸Ã³öÏÖ)
+	// å› ä¸ºä¸ä¼šæŠ•é€’é•¿åº¦ä¸º0çš„ recv è¯·æ±‚,æ‰€ä»¥ bytesTransfered = 0 ä¹Ÿæ˜¯å¤±è´¥(ä¸åº”è¯¥å‡ºç°)
 	if(oppResult)
 	{
 		//_sgtrace("IoSocketImpl(0x%x)::update IO_OPP_RECV :%d bytes, unread pos: %d.\r\n", this, bytesTransfered, _recvOlp.ipos);
@@ -880,22 +880,22 @@ u_int IoSocketImpl::onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 				ev = IO_EVENT_IN;
 			}
 
-			/* Ö»Òª½ÓÊÜ»º³åÄÚ»¹ÓĞÊı¾İ¾Í²»¼ÌĞøÍ¶µİ recv ²Ù×÷, ÓÉÓÃ»§µ÷ÓÃ recv() ´¥·¢*/
+			/* åªè¦æ¥å—ç¼“å†²å†…è¿˜æœ‰æ•°æ®å°±ä¸ç»§ç»­æŠ•é€’ recv æ“ä½œ, ç”±ç”¨æˆ·è°ƒç”¨ recv() è§¦å‘*/
 		}
 		else
 		{
-			/* Ò»´ÎÎŞĞ§µÄÍ¶µİ? È·¶¨Í¶µİ recv Ê±,len > 0 ÓĞ assert, ÎªÊ²Ã´»á·¢Éú²Ù×÷³É¹¦µ«ÊÇ bytesTransfered = 0 µÄÇé¿ö? */
-			/* ¸ù¾İ berkeley socket recv() ·µ»ØÖµ, ÕâÖÖÇé¿öÏÂÓ¦¸ÃÊÇ±íÃ÷¶Ô·½ÒÑ¾­°ÑÌ×½Ó×Ö¹Ø±ÕÁË. */
+			/* ä¸€æ¬¡æ— æ•ˆçš„æŠ•é€’? ç¡®å®šæŠ•é€’ recv æ—¶,len > 0 æœ‰ assert, ä¸ºä»€ä¹ˆä¼šå‘ç”Ÿæ“ä½œæˆåŠŸä½†æ˜¯ bytesTransfered = 0 çš„æƒ…å†µ? */
+			/* æ ¹æ® berkeley socket recv() è¿”å›å€¼, è¿™ç§æƒ…å†µä¸‹åº”è¯¥æ˜¯è¡¨æ˜å¯¹æ–¹å·²ç»æŠŠå¥—æ¥å­—å…³é—­äº†. */
 			ev = IO_EVENT_HANGUP;
 			setStatus(IO_STATUS_PEERCLOSED);
 		}
 	}
 	else
 	{
-		// IOCP Ä£ĞÍÃ»ÓĞÌØ±ğµÄ°ì·¨ÖªµÀ¶Ô·½ÊÇ·ñ¹Ø±ÕÁËÁ¬½Ó,Ö»ÄÜÍ¨¹ıÍ¶µİ IOCP ÇëÇó,È»ºó¼ì²é²Ù×÷½á¹û
+		// IOCP æ¨¡å‹æ²¡æœ‰ç‰¹åˆ«çš„åŠæ³•çŸ¥é“å¯¹æ–¹æ˜¯å¦å…³é—­äº†è¿æ¥,åªèƒ½é€šè¿‡æŠ•é€’ IOCP è¯·æ±‚,ç„¶åæ£€æŸ¥æ“ä½œç»“æœ
 		//_sgtrace("IoSocketImpl(0x%x)::update IO_OPP_RECV :%d bytes, WSAError: %d.\r\n", this, bytesTransfered, WSAGetLastError());
 					
-		/* Í¶µİÊ§°Ü, ´¥·¢errorÊÂ¼ş */
+		/* æŠ•é€’å¤±è´¥, è§¦å‘erroräº‹ä»¶ */
 		ev = IO_EVENT_ERROR;
 		setLastError(WSAGetLastError());
 		setStatus(IO_STATUS_BROKEN);
@@ -929,36 +929,36 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 				ev = IO_EVENT_OUT;
 			}
 
-			/* send µÄÂß¼­ÊÇÖ»Òª·¢ËÍ»º³åÇøÄÚ»¹ÓĞÊı¾İ,¾Í±ØĞë¼ÌĞø·¢ËÍ */
+			/* send çš„é€»è¾‘æ˜¯åªè¦å‘é€ç¼“å†²åŒºå†…è¿˜æœ‰æ•°æ®,å°±å¿…é¡»ç»§ç»­å‘é€ */
 			int dsr = postSend();
 			if(0 == dsr || WSA_IO_PENDING == dsr)
 			{
-				// Í¶µİ³É¹¦»òÕß»º³åÇøÎª¿Õ
+				// æŠ•é€’æˆåŠŸæˆ–è€…ç¼“å†²åŒºä¸ºç©º
 			}
 			else if(WSAESHUTDOWN == dsr)
 			{
-				/* ¼ÌĞø·¢ËÍÊ±Èç¹û·¢Éú±¾µØ´íÎó,´¥·¢ERRÊÂ¼ş, ERRÊÂ¼şºÍEPOLLOUT»¥³â */
-				/* ÒÑ¾­ÉèÖÃÁËshutdown±ê¼Ç,²¢ÇÒ»º³åÇøÄÚµÄÊı¾İÒÑ¾­È«²¿·¢Íê,Ôò´¥·¢ERRORÊÂ¼şÊ¹ÓÃ»§¿ÉÒÔµÃµ½Í¨Öª */
+				/* ç»§ç»­å‘é€æ—¶å¦‚æœå‘ç”Ÿæœ¬åœ°é”™è¯¯,è§¦å‘ERRäº‹ä»¶, ERRäº‹ä»¶å’ŒEPOLLOUTäº’æ–¥ */
+				/* å·²ç»è®¾ç½®äº†shutdownæ ‡è®°,å¹¶ä¸”ç¼“å†²åŒºå†…çš„æ•°æ®å·²ç»å…¨éƒ¨å‘å®Œ,åˆ™è§¦å‘ERRORäº‹ä»¶ä½¿ç”¨æˆ·å¯ä»¥å¾—åˆ°é€šçŸ¥ */
 				ev = IO_EVENT_ERROR;
 				setLastError(dsr);
 			}
 			else
 			{
-				// ¼ì²âµ½Ò»¸ö±¾µØ´íÎó
+				// æ£€æµ‹åˆ°ä¸€ä¸ªæœ¬åœ°é”™è¯¯
 				setLastError(dsr);
 				setStatus(IO_STATUS_BROKEN);
 			}
 		}
 		else
 		{
-			/* ¶Ô·½ÒÑ¾­¹Ø±ÕÁËÁ¬½Ó */
+			/* å¯¹æ–¹å·²ç»å…³é—­äº†è¿æ¥ */
 			ev = IO_EVENT_HANGUP;
 			setStatus(IO_STATUS_PEERCLOSED);
 		}
 	}
 	else
 	{
-		/* ´¥·¢errorÊÂ¼ş,²¢ÇÒ±ê¼ÇÌ×½Ó×ÖÎªËğ»µ */
+		/* è§¦å‘erroräº‹ä»¶,å¹¶ä¸”æ ‡è®°å¥—æ¥å­—ä¸ºæŸå */
 		ev = IO_EVENT_ERROR;
 		setLastError(WSAGetLastError());
 		setStatus(IO_STATUS_BROKEN);
@@ -966,34 +966,34 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 	return ev;
 }
 
-/* ¸üĞÂÄÚ²¿×´Ì¬,·µ»ØÒ»¸ö´¥·¢ÊÂ¼ş */
+/* æ›´æ–°å†…éƒ¨çŠ¶æ€,è¿”å›ä¸€ä¸ªè§¦å‘äº‹ä»¶ */
 u_int IoSocketImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered)
 {
 	u_int ev = IO_EVENT_NONE;
 
 	/*
-	* ÇåÀíÒÑ¾­Íê³ÉµÄ²Ù×÷:Í³¼Æ×Ö½ÚÊıµÈµÈ.
+	* æ¸…ç†å·²ç»å®Œæˆçš„æ“ä½œ:ç»Ÿè®¡å­—èŠ‚æ•°ç­‰ç­‰.
 	*/
 	if(oppResult)
 	{
 		olp->transfered += bytesTransfered;
 	}
 
-	/* Çå¿Õ±ê¼Ç */
+	/* æ¸…ç©ºæ ‡è®° */
 	int oppType = olp->oppType;
 	olp->oppType = IO_OPP_NONE;
 
 	if(_s == INVALID_SOCKET)
 	{
 		/*
-		* Ì×½Ó×ÖÒÑ¾­±»¹Ø±Õ,Èç¹ûËùÓĞµÄ IOCP ²Ù×÷¶¼ÒÑ¾­·µ»Ø(²»Ã¦Âµ),ÔòÌáÊ¾É¾³ı.
+		* å¥—æ¥å­—å·²ç»è¢«å…³é—­,å¦‚æœæ‰€æœ‰çš„ IOCP æ“ä½œéƒ½å·²ç»è¿”å›(ä¸å¿™ç¢Œ),åˆ™æç¤ºåˆ é™¤.
 		*/
 		assert(_status == IO_STATUS_CLOSED);
 	}
 	else
 	{
 		/*
-		*  ·ÖÀà´¦ÀíÒÑ¾­Íê³ÉµÄ²Ù×÷½á¹û
+		*  åˆ†ç±»å¤„ç†å·²ç»å®Œæˆçš„æ“ä½œç»“æœ
 		*/
 		switch(oppType)
 		{

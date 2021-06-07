@@ -1,4 +1,4 @@
-#include <process.h>
+ï»¿#include <process.h>
 #include <assert.h>
 #include "IoSelectorImpl.h"
 
@@ -7,7 +7,7 @@ IoSelectorImpl::IoSelectorImpl()
 	:_iocpHandle(NULL), _sslCtx(NULL)
 {
 	/*
-	* ´´½¨Ò»¸öÍê³É¶Ë¿Ú¹¤×÷¶ÔÏó
+	* åˆ›å»ºä¸€ä¸ªå®Œæˆç«¯å£å·¥ä½œå¯¹è±¡
 	*/
 	if( NULL == (_iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0)) )
 	{
@@ -15,30 +15,30 @@ IoSelectorImpl::IoSelectorImpl()
 	}
 
 	/*
-	* ĞèÒªµÄÊ±ºòÔÙ ´´½¨ SSL CTX
+	* éœ€è¦çš„æ—¶å€™å† åˆ›å»º SSL CTX
 	*/
 }
 
 IoSelectorImpl::~IoSelectorImpl()
 {
-	// ¹Ø±Õ iocp ¾ä±ú
+	// å…³é—­ iocp å¥æŸ„
 	if(NULL != _iocpHandle)
 	{
 		CloseHandle(_iocpHandle);
 		_iocpHandle = NULL;
 	}
 
-	// Çå¿ÕÊÂ¼ş¶ÓÁĞ
+	// æ¸…ç©ºäº‹ä»¶é˜Ÿåˆ—
 	_actAdpList.clear();
 
-	// ÊÍ·ÅËùÓĞµÄÌ×½Ó×Ö¶ÔÏó
+	// é‡Šæ”¾æ‰€æœ‰çš„å¥—æ¥å­—å¯¹è±¡
 	for(auto itr = _adpList.begin(); itr != _adpList.end(); ++itr)
 	{
 		freeSocket(*itr);
 	}
 	_adpList.clear();
 
-	// ÊÍ·Å SSL Ïà¹ØÊı¾İ½á¹¹
+	// é‡Šæ”¾ SSL ç›¸å…³æ•°æ®ç»“æ„
 	if(_sslCtx)
 	{
 		SSL_CTX_free(_sslCtx);
@@ -47,7 +47,7 @@ IoSelectorImpl::~IoSelectorImpl()
 
 int IoSelectorImpl::setopt(int optname, const char* optval, int optlen)
 {
-	// ÉèÖÃ SSL ²ÎÊı(Ö¤Êé,Ë½Ô¿µÈ)
+	// è®¾ç½® SSL å‚æ•°(è¯ä¹¦,ç§é’¥ç­‰)
 	int ret = 0;
 	switch (optname)
 	{
@@ -88,7 +88,7 @@ SSL_CTX* IoSelectorImpl::getSSLCtx()
 {
 	if(!_sslCtx)
 	{
-		/* ÒÔSSL V2 ºÍV3 ±ê×¼¼æÈİ·½Ê½²úÉúÒ»¸öSSL_CTX */
+		/* ä»¥SSL V2 å’ŒV3 æ ‡å‡†å…¼å®¹æ–¹å¼äº§ç”Ÿä¸€ä¸ªSSL_CTX */
 		_sslCtx = SSL_CTX_new(SSLv23_method());
 		assert(_sslCtx);
 	}
@@ -103,12 +103,12 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 	{
 		if(t == IO_TYPE_SOCKET_SSL)
 		{
-			// ´´½¨Ò»¸ö SSL Ì×½Ó×Ö
+			// åˆ›å»ºä¸€ä¸ª SSL å¥—æ¥å­—
 			newAdp = new IoSocketSSLImpl(getSSLCtx(), INVALID_SOCKET);
 		}
 		else
 		{
-			// ´´½¨Ò»¸öÆÕÍ¨Ì×½Ó×Ö
+			// åˆ›å»ºä¸€ä¸ªæ™®é€šå¥—æ¥å­—
 			newAdp = new IoSocketImpl(INVALID_SOCKET);
 		}
 	}
@@ -138,10 +138,10 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 	}
 	assert(newAdp);
 
-	/* °ÑĞÂ½¨µÄÌ×½Ó×Ö¹ØÁªµ½IOCP¾ä±ú */
+	/* æŠŠæ–°å»ºçš„å¥—æ¥å­—å…³è”åˆ°IOCPå¥æŸ„ */
 	if(newAdp && _iocpHandle == CreateIoCompletionPort((HANDLE)newAdp->getSocket(), _iocpHandle, (ULONG_PTR)newAdp, 0))
 	{
-		/* ³õÊ¼»¯¹ØÁªÊı¾İ; ÑÏ¸ñ°´ÕÕÉè¼ÆÔ­ÔòµÄ»°Ó¦¸ÃÓĞÒ»¸ö map °Ñ newAdp ºÍ Ò»¸ö struct ¹ØÁªÆğÀ´,²»¹ıÖ±½Ó·ÅÈë newAdp ¶ÔÏó¼òµ¥µã */
+		/* åˆå§‹åŒ–å…³è”æ•°æ®; ä¸¥æ ¼æŒ‰ç…§è®¾è®¡åŸåˆ™çš„è¯åº”è¯¥æœ‰ä¸€ä¸ª map æŠŠ newAdp å’Œ ä¸€ä¸ª struct å…³è”èµ·æ¥,ä¸è¿‡ç›´æ¥æ”¾å…¥ newAdp å¯¹è±¡ç®€å•ç‚¹ */
 		iosock_info_t* sockInfo = new iosock_info_t;
 		sockInfo->isInQueue = false;
 		sockInfo->eventMask = IO_EVENT_NONE;
@@ -149,12 +149,12 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 
 		newAdp->setPtr2(sockInfo);
 
-		/* ±£´æÕâ¸öÖ¸Õë */
+		/* ä¿å­˜è¿™ä¸ªæŒ‡é’ˆ */
 		_adpList.push_back(newAdp);
 
 		if(acceptBy)
 		{
-			/* ¶ÔÓÚÍ¨¹ı accept »ñµÃµÄsocket,Ä¬ÈÏµ÷ÓÃÒ»´Î recv ,´ËÊ± newAdp ÄÚ²¿µÄ½ÓÊÕ»º³åÇø±Ø¶¨ÊÇ¿ÕµÄ,ËùÒÔ»áÒı·¢Ò»¸ö recv IOCP ²Ù×÷ */
+			/* å¯¹äºé€šè¿‡ accept è·å¾—çš„socket,é»˜è®¤è°ƒç”¨ä¸€æ¬¡ recv ,æ­¤æ—¶ newAdp å†…éƒ¨çš„æ¥æ”¶ç¼“å†²åŒºå¿…å®šæ˜¯ç©ºçš„,æ‰€ä»¥ä¼šå¼•å‘ä¸€ä¸ª recv IOCP æ“ä½œ */
 			int r = newAdp->recv(NULL, 0);
 			assert(r == IO_FAILED && newAdp->getLastError() == IO_EAGAIN);
 		}
@@ -171,37 +171,37 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 
 void IoSelectorImpl::freeSocket(IoSocketImpl* adpImpl)
 {
-	// ÊÍ·Å¹ØÁªÊı¾İ
+	// é‡Šæ”¾å…³è”æ•°æ®
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	assert(sockInfo);
 
 	//assert(!sockInfo->isInQueue);
 	delete sockInfo;
 	
-	// ÊÍ·ÅÌ×½Ó×Ö
+	// é‡Šæ”¾å¥—æ¥å­—
 	delete adpImpl;
 }
 
 int IoSelectorImpl::close(IoSocket* adp)
 {
 	/*
-	* ÒªÈ·±£ IoSocketImpl Ã»ÓĞÕıÔÚ½øĞĞµÄ IOCP ²Ù×÷²ÅÄÜÉ¾³ıÖ¸Õë
+	* è¦ç¡®ä¿ IoSocketImpl æ²¡æœ‰æ­£åœ¨è¿›è¡Œçš„ IOCP æ“ä½œæ‰èƒ½åˆ é™¤æŒ‡é’ˆ
 	*/
 	IoSocketImpl* adpImpl = (IoSocketImpl*)adp;
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	if (0 == adpImpl->closesocket())
 	{
-		// Èç¹ûÒÑ¾­ÔÚ»îÔ¾¶ÓÁĞ,Ôò´Ó¶ÓÁĞÖĞÉ¾³ı
+		// å¦‚æœå·²ç»åœ¨æ´»è·ƒé˜Ÿåˆ—,åˆ™ä»é˜Ÿåˆ—ä¸­åˆ é™¤
 		if (sockInfo->isInQueue)
 		{
 			sockInfo->isInQueue = false;
 			_actAdpList.remove(adpImpl);
 		}
 
-		// ´Óadp¶ÓÁĞÖĞÉ¾³ı
+		// ä»adpé˜Ÿåˆ—ä¸­åˆ é™¤
 		_adpList.remove(adpImpl);
 
-		// ÊÍ·Å
+		// é‡Šæ”¾
 		freeSocket(adpImpl);
 		return 1;
 	}
@@ -211,9 +211,9 @@ int IoSelectorImpl::close(IoSocket* adp)
 int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 {
 	IoSocketImpl *adpImpl = (IoSocketImpl*)adp;
-	ev |= (IO_EVENT_ERROR | IO_EVENT_HANGUP); // ×Ô¶¯Ìí¼Ó±¾µØºÍÔ¶³ÌÁ½ÖÖÒì³£×´Ì¬.
+	ev |= (IO_EVENT_ERROR | IO_EVENT_HANGUP); // è‡ªåŠ¨æ·»åŠ æœ¬åœ°å’Œè¿œç¨‹ä¸¤ç§å¼‚å¸¸çŠ¶æ€.
 
-	// ÏÈ´Ó»îÔ¾¶ÓÁĞÖĞÒÆ³ı
+	// å…ˆä»æ´»è·ƒé˜Ÿåˆ—ä¸­ç§»é™¤
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	if (sockInfo->isInQueue)
 	{
@@ -221,14 +221,14 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 		sockInfo->isInQueue = false;
 	}
 
-	// adp Ò²ĞèÒª´¦Àí
+	// adp ä¹Ÿéœ€è¦å¤„ç†
 	adpImpl->ctl(ev);
 
-	// Çå¿Õµ±Ç°ÊÂ¼ş,ÉèÖÃĞÂµÄÊÂ¼şÆÁ±ÎÎ»
+	// æ¸…ç©ºå½“å‰äº‹ä»¶,è®¾ç½®æ–°çš„äº‹ä»¶å±è”½ä½
 	sockInfo->curEvent = IO_EVENT_NONE;
 	sockInfo->eventMask = ev;
 
-	// ¼ì²â adp µÄ×´Ì¬,ÅĞ¶ÏÊÇ·ñĞèÒªÉú³É³õÊ¼ÊÂ¼ş,Èç¹ûÊÇÔò½øÈë»îÔ¾¶ÓÁĞ,ÓÉÏÂÒ»´Î wait() µ÷ÓÃÈ¡³ö
+	// æ£€æµ‹ adp çš„çŠ¶æ€,åˆ¤æ–­æ˜¯å¦éœ€è¦ç”Ÿæˆåˆå§‹äº‹ä»¶,å¦‚æœæ˜¯åˆ™è¿›å…¥æ´»è·ƒé˜Ÿåˆ—,ç”±ä¸‹ä¸€æ¬¡ wait() è°ƒç”¨å–å‡º
 	sockInfo->curEvent = (adpImpl->detectEvent() & sockInfo->eventMask);
 	if (sockInfo->curEvent && !sockInfo->isInQueue)
 	{
@@ -238,7 +238,7 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 	return 0;
 }
 
-/* Ê¹ÕıÔÚµ÷ÓÃµÄ wait º¯ÊıÒÔ·µ»ØÖµ IO_WAIT_WAKEUP ·µ»Ø */
+/* ä½¿æ­£åœ¨è°ƒç”¨çš„ wait å‡½æ•°ä»¥è¿”å›å€¼ IO_WAIT_WAKEUP è¿”å› */
 int IoSelectorImpl::wakeup()
 {
 	return PostQueuedCompletionStatus(_iocpHandle, 0, NULL, NULL);
@@ -246,7 +246,7 @@ int IoSelectorImpl::wakeup()
 
 int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = INFINITE */)
 {
-	// ÏÈ¼ì²é»îÔ¾¶ÓÁĞÖĞÊÇ·ñÒÑ¾­ÓĞ¾ÍĞ÷µÄ adp,Èç¹ûÓĞÖ±½Ó·µ»Ø
+	// å…ˆæ£€æŸ¥æ´»è·ƒé˜Ÿåˆ—ä¸­æ˜¯å¦å·²ç»æœ‰å°±ç»ªçš„ adp,å¦‚æœæœ‰ç›´æ¥è¿”å›
 	if (!_actAdpList.empty())
 	{
 		IoSocketImpl* adpImpl = _actAdpList.front();
@@ -259,18 +259,18 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 		return IO_WAIT_SUCESS;
 	}
 
-	// IoSelector ÖĞ <0 ¶¨ÒåÎªÎŞÏŞµÈ´ı,Óë Windows INFINITE ¶¨Òå²»Ò»ÖÂ
+	// IoSelector ä¸­ <0 å®šä¹‰ä¸ºæ— é™ç­‰å¾…,ä¸ Windows INFINITE å®šä¹‰ä¸ä¸€è‡´
 	DWORD dwTimeout = INFINITE;
 	if (timeo >= 0)
 	{
 		dwTimeout = timeo;
 	}
 
-	// µÈ´ı iocp ²Ù×÷½á¹û
+	// ç­‰å¾… iocp æ“ä½œç»“æœ
 	int ret = IO_WAIT_SUCESS;
 	for (;;)
 	{
-		// TODO: Ã¿´ÎÑ­»·¿ªÊ¼Ê±Ó¦¸Ã¼õÈ¥ÉÏÒ»´ÎµÈ´ıµÄÊ±¼ä
+		// TODO: æ¯æ¬¡å¾ªç¯å¼€å§‹æ—¶åº”è¯¥å‡å»ä¸Šä¸€æ¬¡ç­‰å¾…çš„æ—¶é—´
 		// ..
 
 		DWORD transfered = 0;
@@ -282,14 +282,14 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 			if (iocpOlpPtr)
 			{
 				/*
-				* IO²Ù×÷±»±ê¼ÇÎªÊ§°Ü
+				* IOæ“ä½œè¢«æ ‡è®°ä¸ºå¤±è´¥
 				*/
 				ev = adpImpl->update(false, iocpOlpPtr, transfered);
 			}
 			else
 			{
 				/*
-				* IOCP±¾Éí·¢ÉúÁËÒ»Ğ©´íÎó,¿ÉÄÜÊÇ³¬Ê± GetLastError returns WAIT_TIMEOUT »òÕßÆäËûÏµÍ³´íÎó
+				* IOCPæœ¬èº«å‘ç”Ÿäº†ä¸€äº›é”™è¯¯,å¯èƒ½æ˜¯è¶…æ—¶ GetLastError returns WAIT_TIMEOUT æˆ–è€…å…¶ä»–ç³»ç»Ÿé”™è¯¯
 				*/
 				if (GetLastError() == WAIT_TIMEOUT)
 				{
@@ -308,7 +308,7 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 			if (transfered == 0 && iocpOlpPtr == NULL && adpImpl == NULL)
 			{
 				/*
-				* Ô¼¶¨µÄ»½ĞÑ±êÖ¾
+				* çº¦å®šçš„å”¤é†’æ ‡å¿—
 				*/
 				ret = IO_WAIT_WAKEUP;
 				break;
@@ -316,31 +316,31 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 			else
 			{
 				/*
-				* ¸ù¾İMSDNµÄËµÃ÷GetQueuedCompletionStatus()·µ»ØTRUE[Ö»]±íÊ¾´ÓIOCPµÄ¶ÓÁĞÖĞÈ¡µÃÒ»¸ö³É¹¦Íê³ÉIO²Ù×÷µÄ°ü.
-				* ÕâÀï"³É¹¦"µÄÓïÒåÖ»ÊÇÖ¸²Ù×÷Õâ¸ö¶¯×÷±¾Éí³É¹¦Íê³É,ÖÁÓÚÍê³ÉµÄ½á¹ûÊÇ²»ÊÇ³ÌĞòÈÏÎªµÄ"³É¹¦",²»Ò»¶¨.
+				* æ ¹æ®MSDNçš„è¯´æ˜GetQueuedCompletionStatus()è¿”å›TRUE[åª]è¡¨ç¤ºä»IOCPçš„é˜Ÿåˆ—ä¸­å–å¾—ä¸€ä¸ªæˆåŠŸå®ŒæˆIOæ“ä½œçš„åŒ….
+				* è¿™é‡Œ"æˆåŠŸ"çš„è¯­ä¹‰åªæ˜¯æŒ‡æ“ä½œè¿™ä¸ªåŠ¨ä½œæœ¬èº«æˆåŠŸå®Œæˆ,è‡³äºå®Œæˆçš„ç»“æœæ˜¯ä¸æ˜¯ç¨‹åºè®¤ä¸ºçš„"æˆåŠŸ",ä¸ä¸€å®š.
 				*
-				* 1. AcceptEx ºÍ ConnectEx ³É¹¦µÄ»°,Èç¹û²»ÒªÇóÒ»Æğ·¢ËÍ/½ÓÊÕÊı¾İ(µØÖ·µÄÄÚÈİ³ıÍâ),ÄÇÃ´ transfered == 0³ÉÁ¢.
-				* 2. Send, Recv ÇëÇóÊÇÈç¹û´«ÈëµÄ»º³åÇø³¤¶È´óÓÚ0,¶øtransfered == 0Ó¦¸ÃÅĞ¶ÏÎªÊ§°Ü.
+				* 1. AcceptEx å’Œ ConnectEx æˆåŠŸçš„è¯,å¦‚æœä¸è¦æ±‚ä¸€èµ·å‘é€/æ¥æ”¶æ•°æ®(åœ°å€çš„å†…å®¹é™¤å¤–),é‚£ä¹ˆ transfered == 0æˆç«‹.
+				* 2. Send, Recv è¯·æ±‚æ˜¯å¦‚æœä¼ å…¥çš„ç¼“å†²åŒºé•¿åº¦å¤§äº0,è€Œtransfered == 0åº”è¯¥åˆ¤æ–­ä¸ºå¤±è´¥.
 				*
-				* Êµ¼Ê²âÊÔ·¢ÏÖ½ÓÊÜ¿Í»§¶ËÁ¬½Ó,Ö´ĞĞÒ»¸öRecv²Ù×÷,È»ºó¿Í»§¶ËÂíÉÏ¶Ï¿ª,¾ÍÄÜÔËĞĞµ½ÕâÀï,²¢ÇÒ Recv transfered == 0³ÉÁ¢.
-				* ×Ü¶øÑÔÖ®,ÉÏ²ãÓ¦¸ÃÅĞ¶ÏÈç¹û´«ÈëµÄÊı¾İ(²»°üÀ¨AcceptExºÍConnectEx½ÓÊÕµÄÔ¶³ÌµØÖ·,¶ø×¨ÃÅÖ¸Êı¾İ²¿·Ö)»º³åÇø³¤¶È´óÓÚ0,
-				* ¶ø·µ»ØµÄ½á¹û±íÊ¾ transfered = 0 ËµÃ÷²Ù×÷Ê§°Ü.
+				* å®é™…æµ‹è¯•å‘ç°æ¥å—å®¢æˆ·ç«¯è¿æ¥,æ‰§è¡Œä¸€ä¸ªRecvæ“ä½œ,ç„¶åå®¢æˆ·ç«¯é©¬ä¸Šæ–­å¼€,å°±èƒ½è¿è¡Œåˆ°è¿™é‡Œ,å¹¶ä¸” Recv transfered == 0æˆç«‹.
+				* æ€»è€Œè¨€ä¹‹,ä¸Šå±‚åº”è¯¥åˆ¤æ–­å¦‚æœä¼ å…¥çš„æ•°æ®(ä¸åŒ…æ‹¬AcceptExå’ŒConnectExæ¥æ”¶çš„è¿œç¨‹åœ°å€,è€Œä¸“é—¨æŒ‡æ•°æ®éƒ¨åˆ†)ç¼“å†²åŒºé•¿åº¦å¤§äº0,
+				* è€Œè¿”å›çš„ç»“æœè¡¨ç¤º transfered = 0 è¯´æ˜æ“ä½œå¤±è´¥.
 				*
-				* 2016.3.15 ²®¿ËÀûÌ×½Ó×Ö½Ó¿Ú recv() = 0 ±íÊ¾¶Ô·½°²È«¹Ø±ÕÌ×½Ó×Ö, IOCP Ó¦¸ÃÒ²ÊÇÕâÑùµÄ,ÕâÑù¾Í½âÊÍÁË transfered = 0 µÄÇé¿ö
+				* 2016.3.15 ä¼¯å…‹åˆ©å¥—æ¥å­—æ¥å£ recv() = 0 è¡¨ç¤ºå¯¹æ–¹å®‰å…¨å…³é—­å¥—æ¥å­—, IOCP åº”è¯¥ä¹Ÿæ˜¯è¿™æ ·çš„,è¿™æ ·å°±è§£é‡Šäº† transfered = 0 çš„æƒ…å†µ
 				*
-				* ÍøÂçÄ£¿é±¾ÉíÎŞ·¨¸ù¾İ transferedÊÇ·ñµÈÓÚ0À´ÅĞ¶Ï²Ù×÷ÊÇ·ñ³É¹¦,ÒòÎªÉÏ²ãÍêÈ«¿ÉÄÜÍ¶µİÒ»¸ö»º³åÇø³¤¶ÈÎª0µÄRecvÇëÇó.
-				* ÕâÔÚ·şÎñÆ÷¿ª·¢ÖĞÊÇ³£ÓÃµÄ¼¼ÇÉ,ÓÃÀ´½ÚÔ¼ÄÚ´æ.
+				* ç½‘ç»œæ¨¡å—æœ¬èº«æ— æ³•æ ¹æ® transferedæ˜¯å¦ç­‰äº0æ¥åˆ¤æ–­æ“ä½œæ˜¯å¦æˆåŠŸ,å› ä¸ºä¸Šå±‚å®Œå…¨å¯èƒ½æŠ•é€’ä¸€ä¸ªç¼“å†²åŒºé•¿åº¦ä¸º0çš„Recvè¯·æ±‚.
+				* è¿™åœ¨æœåŠ¡å™¨å¼€å‘ä¸­æ˜¯å¸¸ç”¨çš„æŠ€å·§,ç”¨æ¥èŠ‚çº¦å†…å­˜.
 				*
-				* 2014.12.30 Èç¹û±¾µØÖ÷¶¯°ÑSOCKET¹Ø±Õ´ËÊ±¸Ã SOCKET ÕıÓĞ IOCP ²Ù×÷ÔÚ½øĞĞ,Ôò  GetQueuedCompletionStatus ·µ»Ø FALSE.
-				* Èç¹ûÔ¶³Ì°Ñ SOCKET ¹Ø±Õ,¶ø´ËÊ±±¾µØ¶ÔÓ¦µÄ SOCKET ÓĞ IOCP ²Ù×÷ÔÚ½øĞĞ,Ôò»áµ¼ÖÂÕâ¸ö IO Íê³É GetQueuedCompletionStatus ·µ»Ø
-				* TRUE. transfered ÔòÊÇÒÑ¾­Íê³ÉµÄ×Ö½ÚÊı,¿ÉÄÜÊÇ0Ò²¿ÉÄÜ²»ÊÇ.
+				* 2014.12.30 å¦‚æœæœ¬åœ°ä¸»åŠ¨æŠŠSOCKETå…³é—­æ­¤æ—¶è¯¥ SOCKET æ­£æœ‰ IOCP æ“ä½œåœ¨è¿›è¡Œ,åˆ™  GetQueuedCompletionStatus è¿”å› FALSE.
+				* å¦‚æœè¿œç¨‹æŠŠ SOCKET å…³é—­,è€Œæ­¤æ—¶æœ¬åœ°å¯¹åº”çš„ SOCKET æœ‰ IOCP æ“ä½œåœ¨è¿›è¡Œ,åˆ™ä¼šå¯¼è‡´è¿™ä¸ª IO å®Œæˆ GetQueuedCompletionStatus è¿”å›
+				* TRUE. transfered åˆ™æ˜¯å·²ç»å®Œæˆçš„å­—èŠ‚æ•°,å¯èƒ½æ˜¯0ä¹Ÿå¯èƒ½ä¸æ˜¯.
 				*/
 				ev = adpImpl->update(true, iocpOlpPtr, transfered);
 			}
 		}
 
 		/*
-		* ¸ù¾İÊÂ¼şÆÁ±Î×ÖÅĞ¶ÏÊÇ·ñĞèÒª·µ»Ø,ÓĞ¿ÉÄÜ×Ô¶¯¼ÌĞø
+		* æ ¹æ®äº‹ä»¶å±è”½å­—åˆ¤æ–­æ˜¯å¦éœ€è¦è¿”å›,æœ‰å¯èƒ½è‡ªåŠ¨ç»§ç»­
 		*/
 		iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 		sockInfo->curEvent = (ev & sockInfo->eventMask);

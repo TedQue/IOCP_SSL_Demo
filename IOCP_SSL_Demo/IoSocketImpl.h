@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 
-// Winsock selector ÊµÏÖ
+// Winsock selector å®ç°
 #include <SDKDDKVer.h>
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define WIN32_LEAN_AND_MEAN             //  ´Ó Windows Í·ÎÄ¼şÖĞÅÅ³ı¼«ÉÙÊ¹ÓÃµÄĞÅÏ¢
+#define WIN32_LEAN_AND_MEAN             //  ä» Windows å¤´æ–‡ä»¶ä¸­æ’é™¤æå°‘ä½¿ç”¨çš„ä¿¡æ¯
 
 #include <Windows.h>
 #include <WinSock2.h>
@@ -20,11 +20,11 @@
 
 typedef unsigned char byte;
 
-/* ¹¤×÷Ä£Ê½: LTÄ£Ê½(Ä¬ÈÏ);ETÄ£Ê½ */
+/* å·¥ä½œæ¨¡å¼: LTæ¨¡å¼(é»˜è®¤);ETæ¨¡å¼ */
 #define IO_MODE_ET 0
 #define IO_MODE_LT 1
 
-/* IOCP ÖØµş½á¹¹¶¨Òå */
+/* IOCP é‡å ç»“æ„å®šä¹‰ */
 typedef struct iocp_overlapped_t
 {
 	OVERLAPPED olp;
@@ -34,29 +34,29 @@ typedef struct iocp_overlapped_t
 	size_t ipos;  /* iocp operation pos */
 	size_t upos;  /* user operation pos */
 	bool et;	/* edge trriger flag */
-	long long transfered; /* ×Ü¼Æ´«ËÍµÄ×Ö½ÚÊı */
+	long long transfered; /* æ€»è®¡ä¼ é€çš„å­—èŠ‚æ•° */
 }IOCPOVERLAPPED;
 
-/* Í¶µİµÄIOCP²Ù×÷ÀàĞÍ */
+/* æŠ•é€’çš„IOCPæ“ä½œç±»å‹ */
 #define IO_OPP_NONE 0
 #define IO_OPP_ACCEPT 0x01
 #define IO_OPP_CONNECT 0x02
 #define IO_OPP_RECV 0x04
 #define IO_OPP_SEND 0x08
 
-/* Ì×½Ó×Ö×´Ì¬ */
-// 0 Î´Á¬½Ó×´Ì¬,Ö»ÄÜµ÷ÓÃ connect
+/* å¥—æ¥å­—çŠ¶æ€ */
+// 0 æœªè¿æ¥çŠ¶æ€,åªèƒ½è°ƒç”¨ connect
 #define IO_STATUS_DISCONNECT 0
 
-// > 0 µÄÖµ±íÊ¾Õı³£×´Ì¬,Ì×½Ó×Ö¿ÉÓÃ
+// > 0 çš„å€¼è¡¨ç¤ºæ­£å¸¸çŠ¶æ€,å¥—æ¥å­—å¯ç”¨
 #define IO_STATUS_CONNECTED 1
 #define IO_STATUS_LISTENING 2
 #define IO_STATUS_SHUTDOWN 3
 
-// < 0 µÄÖµ±íÊ¾Ì×½Ó×ÖÒÑ²»¿ÉÓÃ,Ö»ÄÜ¹Ø±Õ
-#define IO_STATUS_BROKEN -1	/* ÒÑËğ»µ */
-#define IO_STATUS_CLOSED -2 /* ÒÑ¹Ø±Õ */
-#define IO_STATUS_PEERCLOSED -3 /* ÒÑ¾­±»¶Ô·½¹Ø±Õ */
+// < 0 çš„å€¼è¡¨ç¤ºå¥—æ¥å­—å·²ä¸å¯ç”¨,åªèƒ½å…³é—­
+#define IO_STATUS_BROKEN -1	/* å·²æŸå */
+#define IO_STATUS_CLOSED -2 /* å·²å…³é—­ */
+#define IO_STATUS_PEERCLOSED -3 /* å·²ç»è¢«å¯¹æ–¹å…³é—­ */
 
 class IoSocketImpl : public IoSocket
 {
@@ -85,13 +85,13 @@ protected:
 	int setLastError(int err);
 	int setStatus(int st);
 
-	// Í¶µİIOCP²Ù×÷
+	// æŠ•é€’IOCPæ“ä½œ
 	virtual int postAccept();
 	virtual int postConnect(const char *ipAddr, u_short port);
 	virtual int postRecv();
 	virtual int postSend();
 
-	// ÏìÓ¦²Ù×÷·µ»Ø
+	// å“åº”æ“ä½œè¿”å›
 	virtual u_int onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
@@ -102,7 +102,7 @@ public:
 	virtual ~IoSocketImpl();
 
 	/*
-	* IoSocket ½Ó¿Ú
+	* IoSocket æ¥å£
 	*/
 	virtual int type() const {return IO_TYPE_SOCKET;}
 	virtual int getsockname(char *ipAddr, u_short *port);
@@ -122,7 +122,7 @@ public:
 	virtual void* setPtr(void* p);
 
 	/*
-	* IoSelectorImpl µ÷ÓÃµÄº¯ÊıºÍÊı¾İ
+	* IoSelectorImpl è°ƒç”¨çš„å‡½æ•°å’Œæ•°æ®
 	*/
 	virtual u_int update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual int ctl(u_int ev);

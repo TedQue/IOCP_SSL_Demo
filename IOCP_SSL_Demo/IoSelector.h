@@ -1,54 +1,54 @@
-#pragma once
+ï»¿#pragma once
 
-/* Copyright (C) 2015 ãÚÈÙÎÄ
+/* Copyright (C) 2015 é˜™è£æ–‡
  *
  * GPLv3
  *
- * ÁªÏµÔ­×÷Õß: querw@sina.com 
+ * è”ç³»åŸä½œè€…: querw@sina.com 
 */
 
 /*
-* Socket IO ·â×°,¶Ô Windows Æ½Ì¨µÄ IOCP Ä£ĞÍºÍ Linux/Unix Æ½Ì¨µÄ epoll Ìá¹©Ò»¸öÍ³Ò»µÄ½Ó¿Ú.
-* Ö÷ÒªÊÇ°Ñ IOCP Ä£ĞÍµÄ»Øµ÷·½Ê½¸ÄÎªÓ¦ÓÃÖ÷¶¯»ñÈ¡·½Ê½Ïò epoll µÄ±à³Ì·ç¸ñ¿¿Â£.
+* Socket IO å°è£…,å¯¹ Windows å¹³å°çš„ IOCP æ¨¡å‹å’Œ Linux/Unix å¹³å°çš„ epoll æä¾›ä¸€ä¸ªç»Ÿä¸€çš„æ¥å£.
+* ä¸»è¦æ˜¯æŠŠ IOCP æ¨¡å‹çš„å›è°ƒæ–¹å¼æ”¹ä¸ºåº”ç”¨ä¸»åŠ¨è·å–æ–¹å¼å‘ epoll çš„ç¼–ç¨‹é£æ ¼é æ‹¢.
 *
 */
 
 /*
-* Ô¤ÉèÓ¦ÓÃ³¡¾°
-* µ¥Ïß³ÌÊ¹ÓÃ selector, Í¬Ê±×î¶àÖ»ÓĞÒ»¸ö·¢ËÍÇëÇóºÍÒ»¸ö½ÓÊÕÇëÇó
+* é¢„è®¾åº”ç”¨åœºæ™¯
+* å•çº¿ç¨‹ä½¿ç”¨ selector, åŒæ—¶æœ€å¤šåªæœ‰ä¸€ä¸ªå‘é€è¯·æ±‚å’Œä¸€ä¸ªæ¥æ”¶è¯·æ±‚
 * 
 */
 
 /*
-* Î»²Ù×÷¹¤¾ßºêº¯Êı
+* ä½æ“ä½œå·¥å…·å®å‡½æ•°
 */
 #define TEST_BIT(val, bit) ((val) & (bit))
 #define SET_BIT(val, bit) ((val) |= (bit))
 #define UNSET_BIT(val, bit) ((val) &= ~(bit))
 
-/* SOCKET ¹Ì¶¨·ÖÅäµÄÄÚ²¿»º³åÇøµÄ³¤¶È */
+/* SOCKET å›ºå®šåˆ†é…çš„å†…éƒ¨ç¼“å†²åŒºçš„é•¿åº¦ */
 #define RECV_BUF_LEN 2048
 #define SEND_BUF_LEN 2048
 
 /*
-* IoSelector ·â×°Òş²ØÁË socket µÄÆ½Ì¨Çø±ğ,ËùÒÔÔÚ´¦Àí·µ»ØÖµµÄÊ±ºò±ØĞë¶¨ÒåÆ½Ì¨²»Ïà¹ØµÄÖµ
-* berkeley Ì×½Ó×Ö½Ó¿Ú·µ»ØÖµµÄÒ»°ãÔ­Ôò:
-* 0: recv / send ±íÊ¾¶Ô·½Õı³£¹Ø±Õ gracefully closed, ÆäËû±íÊ¾³É¹¦
-* >0: recv / send ±íÊ¾³É¹¦´«ÊäµÄ×Ö·ûÊı
+* IoSelector å°è£…éšè—äº† socket çš„å¹³å°åŒºåˆ«,æ‰€ä»¥åœ¨å¤„ç†è¿”å›å€¼çš„æ—¶å€™å¿…é¡»å®šä¹‰å¹³å°ä¸ç›¸å…³çš„å€¼
+* berkeley å¥—æ¥å­—æ¥å£è¿”å›å€¼çš„ä¸€èˆ¬åŸåˆ™:
+* 0: recv / send è¡¨ç¤ºå¯¹æ–¹æ­£å¸¸å…³é—­ gracefully closed, å…¶ä»–è¡¨ç¤ºæˆåŠŸ
+* >0: recv / send è¡¨ç¤ºæˆåŠŸä¼ è¾“çš„å­—ç¬¦æ•°
 * -1: SOCKET_ERROR 
-* Ò»°ãËµÀ´,ÓÃ»§ÅĞ¶ÏÒÔÏÂ3¸ö·µ»ØÖµ¾Í×ã¹»ÁË. ÆäËû´óÓÚ0µÄ´íÎóÂëÊÇÆ½Ì¨Ïà¹ØµÄ.
+* ä¸€èˆ¬è¯´æ¥,ç”¨æˆ·åˆ¤æ–­ä»¥ä¸‹3ä¸ªè¿”å›å€¼å°±è¶³å¤Ÿäº†. å…¶ä»–å¤§äº0çš„é”™è¯¯ç æ˜¯å¹³å°ç›¸å…³çš„.
 */
 
-#define IO_SUCESS	0		/* ³É¹¦ */
-#define IO_FAILED	-1		/* Ê§°Ü */
-#define IO_EAGAIN	1		/* ÉÔºóÖØÊÔ */
+#define IO_SUCESS	0		/* æˆåŠŸ */
+#define IO_FAILED	-1		/* å¤±è´¥ */
+#define IO_EAGAIN	1		/* ç¨åé‡è¯• */
 
-// Ì×½Ó×ÖÀàĞÍ
+// å¥—æ¥å­—ç±»å‹
 #define IO_TYPE_SOCKET		0
 #define IO_TYPE_SOCKET_SSL	1
 
 /* 
-* Ì×½Ó×Ö½Ó¿Ú,Á÷½Ó¿ÚÍ¬ Berkeley Ì×½Ó×Ö
+* å¥—æ¥å­—æ¥å£,æµæ¥å£åŒ Berkeley å¥—æ¥å­—
 */
 class IoSocket
 {
@@ -71,7 +71,7 @@ public:
 };
 
 /*
-* ctl º¯ÊıµÄEVENT¶¨Òå
+* ctl å‡½æ•°çš„EVENTå®šä¹‰
 */
 #define IO_EVENT_NONE			0x00
 #define IO_EVENT_IN				0x01 /* recv or accept available */
@@ -85,38 +85,38 @@ public:
 #define IO_EVENT_ONESHOT		0x0400
 
 /*
-* wait() ·µ»ØÖµ
+* wait() è¿”å›å€¼
 */
-#define IO_WAIT_SUCESS	0 /* È¡µÃÁËÒ»¸ö»îÔ¾IOAdpater */
-#define IO_WAIT_TIMEOUT 1 /* ³¬Ê± */
-#define IO_WAIT_ERROR	2 /* ³ö´í */
-#define IO_WAIT_WAKEUP	3 /* »½ĞÑ */
+#define IO_WAIT_SUCESS	0 /* å–å¾—äº†ä¸€ä¸ªæ´»è·ƒIOAdpater */
+#define IO_WAIT_TIMEOUT 1 /* è¶…æ—¶ */
+#define IO_WAIT_ERROR	2 /* å‡ºé”™ */
+#define IO_WAIT_WAKEUP	3 /* å”¤é†’ */
 
 /*
-* IoSelector Ñ¡Ïî
+* IoSelector é€‰é¡¹
 */
-#define IO_SELECTOR_OPT_SETCRT		0x0002	/* ÉèÖÃÖ¤Êé, ²ÎÊı C×Ö·û´®±íÊ¾Ö¤ÊéµÄÎÄ¼şÂ·¾¶ */
-#define IO_SELECTOR_OPT_SETPRVKEY	0x0004	/* ÉèÖÃË½Ô¿, ²ÎÊı C×Ö·û´®±íÊ¾ÃÜÔ¿µÄÎÄ¼şÂ·¾¶ */
+#define IO_SELECTOR_OPT_SETCRT		0x0002	/* è®¾ç½®è¯ä¹¦, å‚æ•° Cå­—ç¬¦ä¸²è¡¨ç¤ºè¯ä¹¦çš„æ–‡ä»¶è·¯å¾„ */
+#define IO_SELECTOR_OPT_SETPRVKEY	0x0004	/* è®¾ç½®ç§é’¥, å‚æ•° Cå­—ç¬¦ä¸²è¡¨ç¤ºå¯†é’¥çš„æ–‡ä»¶è·¯å¾„ */
 
 class IoSelector
 {
 public:
-	/* ´´½¨»òÕßÏú»Ù IoSocket ¶ÔÏó */
+	/* åˆ›å»ºæˆ–è€…é”€æ¯ IoSocket å¯¹è±¡ */
 	virtual IoSocket* socket(int t) = 0;
 	virtual IoSocket* accept(IoSocket* sock) = 0;
 	virtual int close(IoSocket* adp) = 0;
 
-	/* Ñ¡Ïî¿ØÖÆ(ÉèÖÃ SSL ²ÎÊıµÈ) */
+	/* é€‰é¡¹æ§åˆ¶(è®¾ç½® SSL å‚æ•°ç­‰) */
 	virtual int setopt(int optname, const char* optval, int optlen) = 0;
 	virtual int getopt(int optname, char* optval, int* optlen) = 0;
 
-	/* ÓÉÓÚ IoSocket µÄ´´½¨ºÍÏú»ÙÓÉ IoSelector ¸ºÔğ,ËùÒÔ ctl º¯Êı¶ÔÓÚ EPOLL_CTL_ADD ºÍ EPOLL_CTL_DEL ²»ÔÙÓĞÒâÒå,Ö»Ö´ĞĞ EPOLL_CTL_MOD ²Ù×÷ */
+	/* ç”±äº IoSocket çš„åˆ›å»ºå’Œé”€æ¯ç”± IoSelector è´Ÿè´£,æ‰€ä»¥ ctl å‡½æ•°å¯¹äº EPOLL_CTL_ADD å’Œ EPOLL_CTL_DEL ä¸å†æœ‰æ„ä¹‰,åªæ‰§è¡Œ EPOLL_CTL_MOD æ“ä½œ */
 	virtual int ctl(IoSocket* adp, unsigned int ev) = 0;
 
-	/* Ã¿´ÎÖ»·µ»ØÒ»¸ö"»îÔ¾"µÄ IoSocket ¶ÔÏó,¶ø²»Ïñ epoll_wait Ò»Ñù·µ»ØÒ»¸öÊı×é */
+	/* æ¯æ¬¡åªè¿”å›ä¸€ä¸ª"æ´»è·ƒ"çš„ IoSocket å¯¹è±¡,è€Œä¸åƒ epoll_wait ä¸€æ ·è¿”å›ä¸€ä¸ªæ•°ç»„ */
 	virtual int wait(IoSocket** adp, unsigned int* ev, int timeo = -1) = 0;
 
-	/* Ê¹ÕıÔÚµ÷ÓÃµÄ wait º¯ÊıÒÔ·µ»ØÖµ IO_WAIT_WAKEUP ·µ»Ø */
+	/* ä½¿æ­£åœ¨è°ƒç”¨çš„ wait å‡½æ•°ä»¥è¿”å›å€¼ IO_WAIT_WAKEUP è¿”å› */
 	virtual	int wakeup() = 0;
 };
 
