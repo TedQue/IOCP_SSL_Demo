@@ -51,12 +51,12 @@ int IoSelectorImpl::setopt(int optname, const char* optval, int optlen)
 	int ret = 0;
 	switch (optname)
 	{
-		case IO_SELECTOR_OPT_SETCRT:
+		case IO_SELECTOR_OPT_SSL_SETCRT:
 		{
 			ret = SSL_CTX_use_certificate_file(getSSLCtx(), optval, SSL_FILETYPE_PEM);
 			break;
 		}
-		case IO_SELECTOR_OPT_SETPRVKEY:
+		case IO_SELECTOR_OPT_SSL_SETPRVKEY:
 		{
 			ret = SSL_CTX_use_PrivateKey_file(getSSLCtx(), optval, SSL_FILETYPE_PEM);
 			break;
@@ -143,7 +143,6 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 	{
 		/* 初始化关联数据; 严格按照设计原则的话应该有一个 map 把 newAdp 和 一个 struct 关联起来,不过直接放入 newAdp 对象简单点 */
 		iosock_info_t* sockInfo = new iosock_info_t;
-		sockInfo->isInQueue = false;
 		sockInfo->eventMask = IO_EVENT_NONE;
 		sockInfo->curEvent = IO_EVENT_NONE;
 
@@ -174,8 +173,6 @@ void IoSelectorImpl::freeSocket(IoSocketImpl* adpImpl)
 	// 释放关联数据
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	assert(sockInfo);
-
-	//assert(!sockInfo->isInQueue);
 	delete sockInfo;
 	
 	// 释放套接字
@@ -191,12 +188,8 @@ int IoSelectorImpl::close(IoSocket* adp)
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	if (0 == adpImpl->closesocket())
 	{
-		// 如果已经在活跃队列,则从队列中删除
-		if (sockInfo->isInQueue)
-		{
-			sockInfo->isInQueue = false;
-			_actAdpList.remove(adpImpl);
-		}
+		// 在活跃队列中删除
+		_actAdpList.remove(adpImpl);
 
 		// 从adp队列中删除
 		_adpList.remove(adpImpl);
@@ -213,13 +206,10 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 	IoSocketImpl *adpImpl = (IoSocketImpl*)adp;
 	ev |= (IO_EVENT_ERROR | IO_EVENT_HANGUP); // 自动添加本地和远程两种异常状态.
 
-	// 先从活跃队列中移除
 	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
-	if (sockInfo->isInQueue)
-	{
-		_actAdpList.remove(adpImpl);
-		sockInfo->isInQueue = false;
-	}
+	
+	// 先从活跃队列中移除
+	_actAdpList.remove(adpImpl);
 
 	// adp 也需要处理
 	adpImpl->ctl(ev);
@@ -230,9 +220,8 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 
 	// 检测 adp 的状态,判断是否需要生成初始事件,如果是则进入活跃队列,由下一次 wait() 调用取出
 	sockInfo->curEvent = (adpImpl->detectEvent() & sockInfo->eventMask);
-	if (sockInfo->curEvent && !sockInfo->isInQueue)
+	if (sockInfo->curEvent)
 	{
-		sockInfo->isInQueue = true;
 		_actAdpList.push_back(adpImpl);
 	}
 	return 0;
@@ -254,6 +243,11 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 
 		*adpOut = adpImpl;
 		*evOut = sockInfo->curEvent;
+
+		if (TEST_BIT(sockInfo->eventMask, IO_EVENT_ONESHOT))
+		{
+			sockInfo->eventMask = IO_EVENT_NONE;
+		}
 
 		_actAdpList.pop_front();
 		return IO_WAIT_SUCESS;
@@ -348,6 +342,11 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 		{
 			*adpOut = adpImpl;
 			*evOut = sockInfo->curEvent;
+
+			if (TEST_BIT(sockInfo->eventMask, IO_EVENT_ONESHOT))
+			{
+				sockInfo->eventMask = IO_EVENT_NONE;
+			}
 			break;
 		}
 	}

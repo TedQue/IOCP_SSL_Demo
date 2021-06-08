@@ -5,7 +5,6 @@
 // IoSelectorImpl 使用的,关联到每个 IoSocketImpl 对象的信息
 typedef struct
 {
-	bool isInQueue;
 	u_int eventMask;
 	u_int curEvent;
 }iosock_info_t;

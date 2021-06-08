@@ -49,7 +49,7 @@ int resolve(const char* host, char* addr)
 int main(int argc, const char *argv[])
 {
 	std::cout << "Welcome to the world of IOCP and OpenSSL" << std::endl;
-	std::cout << "demo v0.2.3 by Que's C++ Studio\r\n" << std::endl;
+	std::cout << "demo v0.2.4 by Que's C++ Studio\r\n" << std::endl;
 
 	if (argc < 2)
 	{
@@ -77,7 +77,7 @@ int main(int argc, const char *argv[])
 
 	// 读取网页内容
 	IoSelector* sel = CreateIoSelector();
-	IoSocket* adp = sel->socket(url.scheme() == Url::sch_https ? IO_TYPE_SOCKET_SSL : IO_TYPE_SOCKET);
+	IoSocket* adp = sel->socket(url.scheme() == Url::scheme_t::sch_https ? IO_TYPE_SOCKET_SSL : IO_TYPE_SOCKET);
 	adp->bind(NULL, 0);
 	adp->connect(ip, url.port());
 

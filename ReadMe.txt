@@ -1,4 +1,4 @@
-<<一种 Windows IOCP 整合 OpenSSL 实现方案>>
+﻿<<一种 Windows IOCP 整合 OpenSSL 实现方案>>
 
 by 阙荣文 Que's C++ Studio
 2021-06-06
@@ -93,3 +93,9 @@ v0.2.2
 
 v0.2.3
 移除 x64 配置
+
+2021.6.8
+v0.2.4
+IO_SELECTOR_OPT_SETCRT 等 SSL 相关选项名字中添加 SSL_ 使意义更清晰
+IoSocket 触发事件后,如果标记有 IO_EVENT_ONESHOT 则清除事件屏蔽字使 IO_EVENT_ONESHOT 选项起效
+移除冗余信息 isInQueue,直接检查活跃队列

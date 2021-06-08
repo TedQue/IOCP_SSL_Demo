@@ -95,8 +95,8 @@ public:
 /*
 * IoSelector 选项
 */
-#define IO_SELECTOR_OPT_SETCRT		0x0002	/* 设置证书, 参数 C字符串表示证书的文件路径 */
-#define IO_SELECTOR_OPT_SETPRVKEY	0x0004	/* 设置私钥, 参数 C字符串表示密钥的文件路径 */
+#define IO_SELECTOR_OPT_SSL_SETCRT		0x0002	/* 设置证书, 参数 C字符串表示证书的文件路径 */
+#define IO_SELECTOR_OPT_SSL_SETPRVKEY	0x0004	/* 设置私钥, 参数 C字符串表示密钥的文件路径 */
 
 class IoSelector
 {
