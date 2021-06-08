@@ -49,11 +49,11 @@ int resolve(const char* host, char* addr)
 int main(int argc, const char *argv[])
 {
 	std::cout << "Welcome to the world of IOCP and OpenSSL" << std::endl;
-	std::cout << "demo v0.2.4 by Que's C++ Studio\r\n" << std::endl;
+	std::cout << "demo v0.2.5 by Que's C++ Studio\r\n" << std::endl;
 
 	if (argc < 2)
 	{
-		std::cout << "usage: IOCP_SSL_Demo <url> <save file>" << std::endl;
+		std::cout << "usage: IOCP_SSL_Demo <url> [<save file>]" << std::endl;
 		return 1;
 	}
 
@@ -71,9 +71,9 @@ int main(int argc, const char *argv[])
 	}
 	std::cout << "resolve " << url.url() << " -> " << ip << ":" << url.port() << std::endl;
 
-	// 网页写文件
-	FILE* d = NULL;
-	if (argc >= 3) d = fopen(argv[2], "w");
+	// 如果指定了输出文件名,则把 http respone 报文(包括报头)写入文件
+	FILE* pf = NULL;
+	if (argc >= 3) pf = fopen(argv[2], "w");
 
 	// 读取网页内容
 	IoSelector* sel = CreateIoSelector();
@@ -125,9 +125,9 @@ int main(int argc, const char *argv[])
 			while ((r = actAdp->recv(buf, 8191)) > 0)
 			{
 				buf[r] = 0;
-				if (d)
+				if (pf)
 				{
-					fwrite(buf, 1, r, d);
+					fwrite(buf, 1, r, pf);
 					std::cout << "recv: " << r << " bytes" << std::endl;
 				}
 				else
@@ -144,7 +144,7 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-	if(d) fclose(d);
+	if(pf) fclose(pf);
 
 	FreeIoSelector(sel);
 	IoSelector_Cleanup();

@@ -81,8 +81,7 @@ screenshot.png
 附3: 更新日志
 2021/6/7
 v0.2
-1. 连接成功后自动 postRecv() 不是很好
-	IoSocketImpl 处理 ctl() 如果用户设置了 IO_EVENT_IN 标记才调用 postRecv()
+1. 连接成功后自动 postRecv() 不是很好,IoSocketImpl 处理 ctl() 如果用户设置了 IO_EVENT_IN 标记才调用 postRecv()
 2. IO_EVENT_RECV 改为 IO_EVENT_IN, IO_EVENT_SEND 改为 IO_EVENT_OUT 同 epoll 风格
 
 v0.2.1
@@ -99,3 +98,6 @@ v0.2.4
 IO_SELECTOR_OPT_SETCRT 等 SSL 相关选项名字中添加 SSL_ 使意义更清晰
 IoSocket 触发事件后,如果标记有 IO_EVENT_ONESHOT 则清除事件屏蔽字使 IO_EVENT_ONESHOT 选项起效
 移除冗余信息 isInQueue,直接检查活跃队列
+
+v0.2.5
+添加 http 响应写入文件的说明
