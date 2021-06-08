@@ -138,23 +138,26 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 	}
 	assert(newAdp);
 
-	/* 把新建的套接字关联到IOCP句柄 */
-	if(newAdp && _iocpHandle == CreateIoCompletionPort((HANDLE)newAdp->getSocket(), _iocpHandle, (ULONG_PTR)newAdp, 0))
+	if(newAdp)
 	{
-		/* 初始化关联数据; 严格按照设计原则的话应该有一个 map 把 newAdp 和 一个 struct 关联起来,不过直接放入 newAdp 对象简单点 */
-		iosock_info_t* sockInfo = new iosock_info_t;
-		sockInfo->eventMask = IO_EVENT_NONE;
-		sockInfo->curEvent = IO_EVENT_NONE;
-		newAdp->setPtr2(sockInfo);
+		/* 把新建的套接字关联到IOCP句柄 */
+		if(_iocpHandle == CreateIoCompletionPort((HANDLE)newAdp->getSocket(), _iocpHandle, (ULONG_PTR)newAdp, 0))
+		{
+			/* 初始化关联数据; 严格按照设计原则的话应该有一个 map 把 newAdp 和 一个 struct 关联起来,不过直接放入 newAdp 对象简单点 */
+			iosock_info_t* sockInfo = new iosock_info_t;
+			sockInfo->eventMask = IO_EVENT_NONE;
+			sockInfo->curEvent = IO_EVENT_NONE;
+			newAdp->setPtr2(sockInfo);
 
-		/* 保存这个指针 */
-		_adpList.push_back(newAdp);
-	}
-	else
-	{
-		assert(0);
-		freeSocket(newAdp);
-		newAdp = NULL;
+			/* 保存这个指针 */
+			_adpList.push_back(newAdp);
+		}
+		else
+		{
+			assert(0);
+			delete newAdp;
+			newAdp = NULL;
+		}
 	}
 
 	return newAdp;

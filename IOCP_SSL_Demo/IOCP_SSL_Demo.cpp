@@ -49,7 +49,7 @@ int resolve(const char* host, char* addr)
 int main(int argc, const char *argv[])
 {
 	std::cout << "Welcome to the world of IOCP and OpenSSL" << std::endl;
-	std::cout << "demo v0.2.6 by Que's C++ Studio\r\n" << std::endl;
+	std::cout << "demo v0.2.7 by Que's C++ Studio\r\n" << std::endl;
 
 	if (argc < 2)
 	{

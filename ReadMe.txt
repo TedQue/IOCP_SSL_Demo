@@ -104,3 +104,6 @@ v0.2.5
 
 v0.2.6
 由于 IoSocketImpl::ctl 会触发 recv 请求, IoSelectorImpl 不再需要在 accept 创建时调用 newAdp->recv()
+
+v0.2.7
+改进 IoSelectorImpl::socket() 创建新 IoSocket 实例失败时的逻辑
