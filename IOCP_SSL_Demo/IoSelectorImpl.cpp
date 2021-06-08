@@ -145,18 +145,10 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 		iosock_info_t* sockInfo = new iosock_info_t;
 		sockInfo->eventMask = IO_EVENT_NONE;
 		sockInfo->curEvent = IO_EVENT_NONE;
-
 		newAdp->setPtr2(sockInfo);
 
 		/* 保存这个指针 */
 		_adpList.push_back(newAdp);
-
-		if(acceptBy)
-		{
-			/* 对于通过 accept 获得的socket,默认调用一次 recv ,此时 newAdp 内部的接收缓冲区必定是空的,所以会引发一个 recv IOCP 操作 */
-			int r = newAdp->recv(NULL, 0);
-			assert(r == IO_FAILED && newAdp->getLastError() == IO_EAGAIN);
-		}
 	}
 	else
 	{

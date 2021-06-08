@@ -101,3 +101,6 @@ IoSocket 触发事件后,如果标记有 IO_EVENT_ONESHOT 则清除事件屏蔽�
 
 v0.2.5
 添加 http 响应写入文件的说明
+
+v0.2.6
+由于 IoSocketImpl::ctl 会触发 recv 请求, IoSelectorImpl 不再需要在 accept 创建时调用 newAdp->recv()
