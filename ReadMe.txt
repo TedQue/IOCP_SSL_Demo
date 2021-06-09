@@ -107,3 +107,7 @@ v0.2.6
 
 v0.2.7
 改进 IoSelectorImpl::socket() 创建新 IoSocket 实例失败时的逻辑
+
+2021.6.9
+v0.2.8
+wait() 正确计算超时时间

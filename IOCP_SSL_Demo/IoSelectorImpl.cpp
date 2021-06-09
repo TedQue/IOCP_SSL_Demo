@@ -259,9 +259,8 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 	int ret = IO_WAIT_SUCESS;
 	for (;;)
 	{
-		// TODO: 每次循环开始时应该减去上一次等待的时间
-		// ..
-
+		// 记录开始等待的时间
+		ULONGLONG startWaitTime = GetTickCount64();
 		DWORD transfered = 0;
 		IoSocketImpl* adpImpl = NULL;
 		IOCPOVERLAPPED* iocpOlpPtr = NULL;
@@ -343,6 +342,20 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 				sockInfo->eventMask = IO_EVENT_NONE;
 			}
 			break;
+		}
+		else if(dwTimeout != INFINITE)
+		{
+			// 本次返回没有触发事件,减去等待时间后继续等待
+			DWORD dwElapsed = (DWORD)(GetTickCount64() - startWaitTime);
+			if(dwElapsed >= dwTimeout)
+			{
+				ret = IO_WAIT_TIMEOUT;
+				break;
+			}
+			else
+			{
+				dwTimeout -= dwElapsed;
+			}
 		}
 	}
 	return ret;
