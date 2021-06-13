@@ -111,3 +111,8 @@ v0.2.7
 2021.6.9
 v0.2.8
 wait() 正确计算超时时间
+
+2021.6.13
+v0.3.0
+移除 iosock_info_t, IoSelectorImpl 不再需要维护关联数据,IoSelectorImpl::ctl 只是把 sock 加入检查列表,在 wait() 中再判断,所以不需要关联数据了
+IoSocketImpl 需要维护自身的事件屏蔽字,记录,并根据 ONE_SHOT 标记清零

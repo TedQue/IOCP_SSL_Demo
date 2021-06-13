@@ -307,18 +307,9 @@ u_int IoSocketSSLImpl::sslShutdown(u_int ev)
 
 u_int IoSocketSSLImpl::detectEvent()
 {
-	u_int ev = IoSocketImpl::detectEvent();
+	u_int ev = IoSocketImpl::onDetectEvent();
 	
 	// 只要 SSL_read() 没有返回 -1 就认为还有数据可读, 而不是通过 SSL_pending() 来判断
-
-	// SSL_pending() 会导致 SSL_read() 返回 -1, 并且 SSL_get_error() 返回 SSL_ERROR_SSL(1) 不知道是怎么回事
-	//if(SSL_pending(_ssl) > 0)
-	//{
-	//	SET_BIT(ev, IO_EVENT_IN);
-	//}
-
-	// 用户应该包容这种情况: wait() 返回 IO_EVENT_IN 事件,但是调用 recv() 却返回 -1,因为SSL recv 是按照 SSL Record 语义处理的.
-
 	if(_canRecv)
 	{
 		SET_BIT(ev, IO_EVENT_IN);
@@ -328,7 +319,8 @@ u_int IoSocketSSLImpl::detectEvent()
 	{
 		SET_BIT(ev, IO_EVENT_OUT);
 	}
-	return ev;
+
+	return maskEvent(ev);
 }
 
 u_int IoSocketSSLImpl::sslHandshake(u_int ev)
@@ -393,7 +385,7 @@ u_int IoSocketSSLImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 	int opp = olp->oppType;
 	assert(opp != IO_OPP_NONE);
 
-	u_int ev = IoSocketImpl::update(oppResult, olp, bytesTransfered);
+	u_int ev = IoSocketImpl::onUpdate(oppResult, olp, bytesTransfered);
 
 	if(oppResult)
 	{
@@ -412,5 +404,5 @@ u_int IoSocketSSLImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesT
 	* 但是又必须通过调用 SSL_read 驱动 SSL 引擎调用 BIO 继续读写事件.
 	* 所以对于用户来说这样的情况是是正常的也是必须处理的: 套接字可读,调用 SSL_read 返回 -1 和 SSL_ERROR_WANT_READ.
 	*/
-	return ev;
+	return maskEvent(ev);
 }

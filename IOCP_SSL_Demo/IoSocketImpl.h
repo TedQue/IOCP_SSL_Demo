@@ -20,10 +20,6 @@
 
 typedef unsigned char byte;
 
-/* 工作模式: LT模式(默认);ET模式 */
-#define IO_MODE_ET 0
-#define IO_MODE_LT 1
-
 /* IOCP 重叠结构定义 */
 typedef struct iocp_overlapped_t
 {
@@ -64,14 +60,13 @@ protected:
 	SOCKET _s;
 	sockaddr _sockname;
 	sockaddr _peername;
-	int _mode;
+	u_int _evMask;
 	int _shutdownFlag;
 
 	int _lastError;
 	int _status;
 
 	void* _userPtr;
-	void* _userPtr2;
 
 	SOCKET _newSock;
 	char* _acceptBuf;
@@ -84,6 +79,9 @@ protected:
 	bool busy();
 	int setLastError(int err);
 	int setStatus(int st);
+	
+	// 判断初始事件(返回未经过 mask 的原始事件)
+	u_int onDetectEvent();
 
 	// 投递IOCP操作
 	virtual int postAccept();
@@ -91,11 +89,15 @@ protected:
 	virtual int postRecv();
 	virtual int postSend();
 
-	// 响应操作返回
+	// 响应操作完成(返回未经过 mask 的原始事件)
+	virtual u_int onUpdate(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onConnect(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual u_int onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
+
+	// 返回经过屏蔽的事件(可能会更新事件屏蔽字,所以在所有派生类中只能调用一次,这是需要 onDetectEvent/onUpdate 的原因
+	u_int maskEvent(u_int ev);
 
 public:
 	IoSocketImpl(SOCKET s, const sockaddr* sockname = NULL, const sockaddr* peername = NULL);
@@ -124,11 +126,9 @@ public:
 	/*
 	* IoSelectorImpl 调用的函数和数据
 	*/
-	virtual u_int update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 	virtual int ctl(u_int ev);
 	virtual u_int detectEvent();
+	virtual u_int update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered);
 
 	SOCKET getSocket();
-	void* getPtr2();
-	void* setPtr2(void* p);
 };

@@ -2,13 +2,6 @@
 #include "IoSocketImpl.h"
 #include "IoSocketSSLImpl.h"
 
-// IoSelectorImpl 使用的,关联到每个 IoSocketImpl 对象的信息
-typedef struct
-{
-	u_int eventMask;
-	u_int curEvent;
-}iosock_info_t;
-
 class IoSelectorImpl : public IoSelector
 {
 protected:
@@ -18,7 +11,6 @@ protected:
 	std::list<IoSocketImpl*> _actAdpList;
 
 	SSL_CTX* getSSLCtx();
-	void freeSocket(IoSocketImpl* adpImpl);
 
 public:
 	IoSelectorImpl();

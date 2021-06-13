@@ -34,7 +34,7 @@ IoSelectorImpl::~IoSelectorImpl()
 	// 释放所有的套接字对象
 	for(auto itr = _adpList.begin(); itr != _adpList.end(); ++itr)
 	{
-		freeSocket(*itr);
+		delete (*itr);
 	}
 	_adpList.clear();
 
@@ -143,12 +143,6 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 		/* 把新建的套接字关联到IOCP句柄 */
 		if(_iocpHandle == CreateIoCompletionPort((HANDLE)newAdp->getSocket(), _iocpHandle, (ULONG_PTR)newAdp, 0))
 		{
-			/* 初始化关联数据; 严格按照设计原则的话应该有一个 map 把 newAdp 和 一个 struct 关联起来,不过直接放入 newAdp 对象简单点 */
-			iosock_info_t* sockInfo = new iosock_info_t;
-			sockInfo->eventMask = IO_EVENT_NONE;
-			sockInfo->curEvent = IO_EVENT_NONE;
-			newAdp->setPtr2(sockInfo);
-
 			/* 保存这个指针 */
 			_adpList.push_back(newAdp);
 		}
@@ -163,24 +157,12 @@ IoSocket* IoSelectorImpl::socket(IoSocket* acceptBy, int t)
 	return newAdp;
 }
 
-void IoSelectorImpl::freeSocket(IoSocketImpl* adpImpl)
-{
-	// 释放关联数据
-	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
-	assert(sockInfo);
-	delete sockInfo;
-	
-	// 释放套接字
-	delete adpImpl;
-}
-
 int IoSelectorImpl::close(IoSocket* adp)
 {
 	/*
 	* 要确保 IoSocketImpl 没有正在进行的 IOCP 操作才能删除指针
 	*/
 	IoSocketImpl* adpImpl = (IoSocketImpl*)adp;
-	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
 	if (0 == adpImpl->closesocket())
 	{
 		// 在活跃队列中删除
@@ -190,7 +172,7 @@ int IoSelectorImpl::close(IoSocket* adp)
 		_adpList.remove(adpImpl);
 
 		// 释放
-		freeSocket(adpImpl);
+		delete (adpImpl);
 		return 1;
 	}
 	return 0;
@@ -201,24 +183,15 @@ int IoSelectorImpl::ctl(IoSocket* adp, u_int ev)
 	IoSocketImpl *adpImpl = (IoSocketImpl*)adp;
 	ev |= (IO_EVENT_ERROR | IO_EVENT_HANGUP); // 自动添加本地和远程两种异常状态.
 
-	iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
-	
 	// 先从活跃队列中移除
 	_actAdpList.remove(adpImpl);
 
-	// adp 也需要处理
+	// adp 也需要记录事件屏蔽字
 	adpImpl->ctl(ev);
 
-	// 清空当前事件,设置新的事件屏蔽位
-	sockInfo->curEvent = IO_EVENT_NONE;
-	sockInfo->eventMask = ev;
+	// 把 adpImpl 加入检查队列,在 wait() 调用中判断初始状态是否可以直接触发事件
+	_actAdpList.push_back(adpImpl);
 
-	// 检测 adp 的状态,判断是否需要生成初始事件,如果是则进入活跃队列,由下一次 wait() 调用取出
-	sockInfo->curEvent = (adpImpl->detectEvent() & sockInfo->eventMask);
-	if (sockInfo->curEvent)
-	{
-		_actAdpList.push_back(adpImpl);
-	}
 	return 0;
 }
 
@@ -230,22 +203,23 @@ int IoSelectorImpl::wakeup()
 
 int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = INFINITE */)
 {
-	// 先检查活跃队列中是否已经有就绪的 adp,如果有直接返回
-	if (!_actAdpList.empty())
+	// 先检查活跃队列中是否已经有就绪的 adp,如果有直接返回;如果没有初始事件则从该队列中移除
+	for(auto i = _actAdpList.begin(); i != _actAdpList.end();)
 	{
-		IoSocketImpl* adpImpl = _actAdpList.front();
-		iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
-
-		*adpOut = adpImpl;
-		*evOut = sockInfo->curEvent;
-
-		if (TEST_BIT(sockInfo->eventMask, IO_EVENT_ONESHOT))
+		IoSocketImpl* adpImpl = *i;
+		u_int ev = adpImpl->detectEvent();
+		if(ev)
 		{
-			sockInfo->eventMask = IO_EVENT_NONE;
-		}
+			*adpOut = adpImpl;
+			*evOut = ev;
 
-		_actAdpList.pop_front();
-		return IO_WAIT_SUCESS;
+			_actAdpList.erase(i);
+			return IO_WAIT_SUCESS;
+		}
+		else
+		{
+			i = _actAdpList.erase(i);
+		}
 	}
 
 	// IoSelector 中 <0 定义为无限等待,与 Windows INFINITE 定义不一致
@@ -330,17 +304,10 @@ int IoSelectorImpl::wait(IoSocket** adpOut, unsigned int* evOut, int timeo /* = 
 		/*
 		* 根据事件屏蔽字判断是否需要返回,有可能自动继续
 		*/
-		iosock_info_t* sockInfo = (iosock_info_t*)adpImpl->getPtr2();
-		sockInfo->curEvent = (ev & sockInfo->eventMask);
-		if (sockInfo->curEvent)
+		if (ev)
 		{
 			*adpOut = adpImpl;
-			*evOut = sockInfo->curEvent;
-
-			if (TEST_BIT(sockInfo->eventMask, IO_EVENT_ONESHOT))
-			{
-				sockInfo->eventMask = IO_EVENT_NONE;
-			}
+			*evOut = ev;
 			break;
 		}
 		else if(dwTimeout != INFINITE)

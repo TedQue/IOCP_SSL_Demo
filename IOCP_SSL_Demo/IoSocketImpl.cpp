@@ -109,12 +109,11 @@ IoSocketImpl::IoSocketImpl(SOCKET s, const sockaddr* sockname, const sockaddr* p
 	_lpfnAcceptEx = NULL;
 	_lpfnGetAcceptExAddr = NULL;
 
-	_mode = IO_MODE_LT;
+	_evMask = IO_EVENT_NONE;
 	_shutdownFlag = -1;
 	_lastError = 0;
 
 	_userPtr = NULL;
-	_userPtr2 = NULL;
 }
 
 IoSocketImpl::~IoSocketImpl()
@@ -165,18 +164,6 @@ void* IoSocketImpl::setPtr(void* p)
 {
 	void* oldP = _userPtr;
 	_userPtr = p;
-	return oldP;
-}
-
-void* IoSocketImpl::getPtr2()
-{
-	return _userPtr2;
-}
-
-void* IoSocketImpl::setPtr2(void* p)
-{
-	void* oldP = _userPtr2;
-	_userPtr2 = p;
 	return oldP;
 }
 
@@ -683,10 +670,8 @@ int IoSocketImpl::postSend()
 
 int IoSocketImpl::ctl(u_int ev)
 {
-	int oldm = _mode;
-
-	// 记录触发模式
-	_mode = TEST_BIT(ev, IO_EVENT_ET) ? IO_MODE_ET : IO_MODE_LT;
+	// 记录事件屏蔽字
+	_evMask = ev;
 
 	// 如果设置了 IO_EVENT_IN 则投递一个读请求(如果已经有读请求在进行中会忽略)
 	if (TEST_BIT(ev, IO_EVENT_IN))
@@ -702,7 +687,17 @@ int IoSocketImpl::ctl(u_int ev)
 		}
 	}
 
-	return oldm;
+	return 0;
+}
+
+u_int IoSocketImpl::maskEvent(u_int ev)
+{
+	ev &= _evMask;
+	if(ev && TEST_BIT(_evMask, IO_EVENT_ONESHOT))
+	{
+		_evMask = IO_EVENT_NONE;
+	}
+	return ev;
 }
 
 /*
@@ -710,7 +705,7 @@ int IoSocketImpl::ctl(u_int ev)
 * 如果套接字发生过**本地**错误则会触发 IO_EVENT_ERROR 事件.所以一个已经出错的套接字放入 selector 中总会被返回.
 * **远程**错误则会被忽略,直到执行操作后再次发生远程错误.
 */
-u_int IoSocketImpl::detectEvent()
+u_int IoSocketImpl::onDetectEvent()
 {
 	u_int ev = IO_EVENT_NONE;
 
@@ -762,6 +757,11 @@ u_int IoSocketImpl::detectEvent()
 		}
 	}
 	return ev;
+}
+
+u_int IoSocketImpl::detectEvent()
+{
+	return maskEvent(onDetectEvent());
 }
 
 u_int IoSocketImpl::onAccept(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered)
@@ -863,7 +863,7 @@ u_int IoSocketImpl::onRecv(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 		if(bytesTransfered > 0)
 		{
 			_recvOlp.ipos += bytesTransfered;
-			if(_mode == IO_MODE_ET)
+			if(TEST_BIT(_evMask, IO_EVENT_ET))
 			{
 				if(_recvOlp.et)
 				{
@@ -912,7 +912,7 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 		{
 			_sendOlp.ipos = bytesTransfered;
 
-			if(_mode == IO_MODE_ET)
+			if(TEST_BIT(_evMask, IO_EVENT_ET))
 			{
 				if(_sendOlp.et)
 				{
@@ -967,7 +967,7 @@ u_int IoSocketImpl::onSend(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 }
 
 /* 更新内部状态,返回一个触发事件 */
-u_int IoSocketImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered)
+u_int IoSocketImpl::onUpdate(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered)
 {
 	u_int ev = IO_EVENT_NONE;
 
@@ -1022,4 +1022,9 @@ u_int IoSocketImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTran
 	}
 
 	return ev;
+}
+
+u_int IoSocketImpl::update(bool oppResult, IOCPOVERLAPPED* olp, size_t bytesTransfered)
+{
+	return maskEvent(onUpdate(oppResult, olp, bytesTransfered));
 }
